@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Футбольна Картка Гравця</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: 'Montserrat', sans-serif; background-color: #f4f4f4; display: flex; justify-content: center; padding: 20px; }
+        .card { background: white; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); padding: 20px; width: 100%; max-width: 400px; text-align: center; }
+        h2 { color: #4d4948; margin-bottom: 5px; }
+        .ovr { font-size: 48px; font-weight: bold; color: #93d501; margin: 10px 0; }
+        canvas { max-width: 100%; margin-top: 20px; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h2>МАРК</h2>
+    <p style="color: #888;">Юний Нападник</p>
+    <div class="ovr">82</div>
+    
+    <canvas id="skillsChart"></canvas>
+</div>
+
+<script>
+    const ctx = document.getElementById('skillsChart').getContext('2d');
+    
+    // Дані для павутинки (можна підтягувати з вашої бази Python)
+    const data = {
+        labels: ['Швидкість', 'Дриблінг', 'Удар', 'Пас', 'Витривалість', 'Фізика'],
+        datasets: [{
+            label: 'Поточні Навички',
+            data: [85, 78, 92, 70, 88, 75], // Значення 0-100
+            fill: true,
+            backgroundColor: 'rgba(147, 213, 1, 0.2)',
+            borderColor: '#93d501',
+            pointBackgroundColor: '#93d501',
+            pointBorderColor: '#fff',
+            pointHoverBackgroundColor: '#fff',
+            pointHoverBorderColor: '#93d501'
+        }]
+    };
+
+    const config = {
+        type: 'radar',
+        data: data,
+        options: {
+            scales: {
+                r: {
+                    angleLines: { display: true },
+                    suggestedMin: 0,
+                    suggestedMax: 100,
+                    ticks: { display: false }
+                }
+            },
+            plugins: {
+                legend: { display: false }
+            }
+        }
+    };
+
+    new Chart(ctx, config);
+</script>
+
+</body>
+</html>
