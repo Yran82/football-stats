@@ -3,65 +3,51 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Футбольна Картка Гравця</title>
+    <title>Футбольна Картка</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body { font-family: 'Montserrat', sans-serif; background-color: #f4f4f4; display: flex; justify-content: center; padding: 20px; }
         .card { background: white; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); padding: 20px; width: 100%; max-width: 400px; text-align: center; }
-        h2 { color: #4d4948; margin-bottom: 5px; }
+        h2 { color: #4d4948; margin-bottom: 5px; text-transform: uppercase; }
         .ovr { font-size: 48px; font-weight: bold; color: #93d501; margin: 10px 0; }
-        canvas { max-width: 100%; margin-top: 20px; }
     </style>
 </head>
 <body>
-
 <div class="card">
-    <h2>МАРК</h2>
-    <p style="color: #888;">Юний Нападник</p>
-    <div class="ovr">82</div>
-    
+    <h2 id="player_name">ГРАВЕЦЬ</h2>
+    <div class="ovr" id="ovr_val">0</div>
     <canvas id="skillsChart"></canvas>
 </div>
 
 <script>
+    // Зчитуємо дані з посилання
+    const urlParams = new URLSearchParams(window.location.search);
+    const name = urlParams.get('name') || "Марк";
+    const s = parseInt(urlParams.get('s')) || 50; // Швидкість
+    const d = parseInt(urlParams.get('d')) || 50; // Дриблінг
+    const u = parseInt(urlParams.get('u')) || 50; // Удар
+    const p = parseInt(urlParams.get('p')) || 50; // Пас
+    const v = parseInt(urlParams.get('v')) || 50; // Витривалість
+    const f = parseInt(urlParams.get('f')) || 50; // Фізика
+
+    // Виводимо ім'я та середній рейтинг
+    document.getElementById('player_name').innerText = name;
+    document.getElementById('ovr_val').innerText = Math.round((s+d+u+p+v+f)/6);
+
     const ctx = document.getElementById('skillsChart').getContext('2d');
-    
-    // Дані для павутинки (можна підтягувати з вашої бази Python)
-    const data = {
-        labels: ['Швидкість', 'Дриблінг', 'Удар', 'Пас', 'Витривалість', 'Фізика'],
-        datasets: [{
-            label: 'Поточні Навички',
-            data: [85, 78, 92, 70, 88, 75], // Значення 0-100
-            fill: true,
-            backgroundColor: 'rgba(147, 213, 1, 0.2)',
-            borderColor: '#93d501',
-            pointBackgroundColor: '#93d501',
-            pointBorderColor: '#fff',
-            pointHoverBackgroundColor: '#fff',
-            pointHoverBorderColor: '#93d501'
-        }]
-    };
-
-    const config = {
+    new Chart(ctx, {
         type: 'radar',
-        data: data,
-        options: {
-            scales: {
-                r: {
-                    angleLines: { display: true },
-                    suggestedMin: 0,
-                    suggestedMax: 100,
-                    ticks: { display: false }
-                }
-            },
-            plugins: {
-                legend: { display: false }
-            }
-        }
-    };
-
-    new Chart(ctx, config);
+        data: {
+            labels: ['Швидкість', 'Дриблінг', 'Удар', 'Пас', 'Витривалість', 'Фізика'],
+            datasets: [{
+                data: [s, d, u, p, v, f],
+                backgroundColor: 'rgba(147, 213, 1, 0.2)',
+                borderColor: '#93d501',
+                pointBackgroundColor: '#93d501'
+            }]
+        },
+        options: { scales: { r: { suggestedMin: 0, suggestedMax: 100, ticks: { display: false } } }, plugins: { legend: { display: false } } }
+    });
 </script>
-
 </body>
 </html>
