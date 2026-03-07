@@ -2,37 +2,56 @@
 <html lang="uk">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Футбольна Картка</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Pro Player Card</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        body { font-family: 'Montserrat', sans-serif; background-color: #f4f4f4; display: flex; justify-content: center; padding: 20px; }
-        .card { background: white; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); padding: 20px; width: 100%; max-width: 400px; text-align: center; }
-        h2 { color: #4d4948; margin-bottom: 5px; text-transform: uppercase; }
-        .ovr { font-size: 48px; font-weight: bold; color: #93d501; margin: 10px 0; }
+        /* Стилізація під темну тему та комікс */
+        body { font-family: 'Segoe UI', sans-serif; background: #121212; color: white; margin: 0; padding: 15px; display: flex; justify-content: center; }
+        .card { background: #1e1e1e; border-radius: 25px; padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.7); position: relative; overflow: hidden; width: 100%; max-width: 380px; border: 2px solid #333; }
+        
+        /* Фон з фото */
+        .player-photo { position: absolute; bottom: -20px; right: -20px; height: 110%; opacity: 0.15; z-index: 1; pointer-events: none; transition: opacity 0.5s; }
+        
+        .header { text-align: center; margin-bottom: 20px; position: relative; z-index: 2; }
+        .name { font-size: 28px; font-weight: bold; color: #93d501; text-transform: uppercase; letter-spacing: 1px; }
+        .age { color: #888; font-size: 14px; }
+        
+        .chart-container { position: relative; z-index: 2; }
     </style>
 </head>
 <body>
 <div class="card">
-    <h2 id="player_name">ГРАВЕЦЬ</h2>
-    <div class="ovr" id="ovr_val">0</div>
-    <canvas id="skillsChart"></canvas>
+    <img src="" id="player_img" class="player-photo" alt="Player">
+    
+    <div class="header">
+        <div class="name" id="p_name">ГРАВЕЦЬ</div>
+        <div class="age" id="p_age">0 років</div>
+    </div>
+    
+    <div class="chart-container">
+        <canvas id="skillsChart"></canvas>
+    </div>
 </div>
 
 <script>
-    // Зчитуємо дані з посилання
     const urlParams = new URLSearchParams(window.location.search);
-    const name = urlParams.get('name') || "Марк";
-    const s = parseInt(urlParams.get('s')) || 50; // Швидкість
-    const d = parseInt(urlParams.get('d')) || 50; // Дриблінг
-    const u = parseInt(urlParams.get('u')) || 50; // Удар
-    const p = parseInt(urlParams.get('p')) || 50; // Пас
-    const v = parseInt(urlParams.get('v')) || 50; // Витривалість
-    const f = parseInt(urlParams.get('f')) || 50; // Фізика
+    const name = urlParams.get('name') || "Mark"; // Очікуємо "Mark" або "Glib"
+    
+    // Встановлюємо ім'я та фото
+    document.getElementById('p_name').innerText = (name.toLowerCase() === 'glib') ? 'ГЛІБ' : 'МАРК';
+    document.getElementById('p_age').innerText = (name.toLowerCase() === 'glib') ? '11 років' : '2 роки';
+    document.getElementById('player_img').src = name.toLowerCase() + '.png';
 
-    // Виводимо ім'я та середній рейтинг
-    document.getElementById('player_name').innerText = name;
-    document.getElementById('ovr_val').innerText = Math.round((s+d+u+p+v+f)/6);
+    // Отримуємо скіли (або 50 за замовчуванням)
+    const skills = [
+        parseInt(urlParams.get('s')) || 50, // Швидкість
+        parseInt(urlParams.get('d')) || 50, // Дриблінг
+        parseInt(urlParams.get('u')) || 50, // Удар
+        parseInt(urlParams.get('p')) || 50, // Пас
+        parseInt(urlParams.get('v')) || 50, // Витривалість
+        parseInt(urlParams.get('f')) || 50  // Фізика
+    ];
 
     const ctx = document.getElementById('skillsChart').getContext('2d');
     new Chart(ctx, {
@@ -40,13 +59,29 @@
         data: {
             labels: ['Швидкість', 'Дриблінг', 'Удар', 'Пас', 'Витривалість', 'Фізика'],
             datasets: [{
-                data: [s, d, u, p, v, f],
+                data: skills,
                 backgroundColor: 'rgba(147, 213, 1, 0.2)',
                 borderColor: '#93d501',
-                pointBackgroundColor: '#93d501'
+                borderWidth: 3,
+                pointBackgroundColor: '#93d501',
+                pointRadius: 4
             }]
         },
-        options: { scales: { r: { suggestedMin: 0, suggestedMax: 100, ticks: { display: false } } }, plugins: { legend: { display: false } } }
+        options: {
+            // Налаштування анімації
+            animation: { duration: 1500, easing: 'easeOutElastic' },
+            scales: {
+                r: {
+                    angleLines: { color: '#444' },
+                    grid: { color: '#333' },
+                    pointLabels: { color: '#aaa', font: { size: 12 } },
+                    suggestedMin: 0,
+                    suggestedMax: 100,
+                    ticks: { display: false }
+                }
+            },
+            plugins: { legend: { display: false } }
+        }
     });
 </script>
 </body>
