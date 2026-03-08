@@ -3,90 +3,86 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>G&M Football Pro Community</title>
+    <title>G&M Football Pro Elite</title>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #121212; color: white; margin: 0; padding: 20px; }
-        .header { border-bottom: 2px solid #39FF14; padding-bottom: 10px; margin-bottom: 20px; }
+        body { font-family: 'Segoe UI', sans-serif; background: #0f0f0f; color: white; margin: 0; padding: 15px; }
+        .header { border-bottom: 2px solid #39FF14; margin-bottom: 20px; padding-bottom: 10px; }
+        .card { background: #1a1a1a; border: 1px solid #333; border-radius: 15px; padding: 15px; margin-bottom: 20px; position: relative; }
+        h2 { color: #39FF14; margin: 0 0 10px 0; text-transform: uppercase; }
         
-        /* Форма створення */
-        .registration-form { background: #1e1e1e; padding: 20px; border-radius: 15px; border: 1px solid #333; margin-bottom: 30px; }
-        input { width: 100%; padding: 10px; margin: 10px 0; border-radius: 8px; border: 1px solid #444; background: #252525; color: white; box-sizing: border-box; }
-        
-        /* Картки гравців */
-        .players-feed { display: grid; gap: 20px; }
-        .player-card { background: linear-gradient(145deg, #2a2a2a, #1a1a1a); border-left: 5px solid #39FF14; padding: 15px; border-radius: 12px; position: relative; }
-        .player-name { color: #39FF14; font-size: 1.3em; font-weight: bold; text-transform: uppercase; }
-        .player-info { font-size: 0.9em; color: #aaa; margin: 5px 0; }
-        
-        .btn { background: #39FF14; color: black; border: none; padding: 12px; border-radius: 8px; font-weight: bold; width: 100%; cursor: pointer; }
-        .badge { position: absolute; top: 15px; right: 15px; background: #333; padding: 5px 10px; border-radius: 20px; font-size: 0.7em; }
+        /* Спортивні метрики */
+        .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 10px 0; }
+        .stat-item { background: #252525; padding: 8px; border-radius: 8px; text-align: center; border: 1px solid #444; }
+        .stat-val { display: block; color: #39FF14; font-weight: bold; font-size: 1.1em; }
+        .stat-lab { font-size: 0.7em; color: #888; text-transform: uppercase; }
+
+        /* Графік динаміки (CSS імітація) */
+        .chart-box { margin: 15px 0; text-align: left; }
+        .bar-container { background: #333; border-radius: 5px; height: 10px; margin: 5px 0; }
+        .bar-fill { background: #39FF14; height: 100%; border-radius: 5px; box-shadow: 0 0 10px #39FF14; }
+
+        /* Розклад та Календар */
+        .schedule, .calendar { background: #222; padding: 12px; border-radius: 10px; margin-top: 15px; text-align: left; }
+        .item { font-size: 0.9em; border-bottom: 1px solid #333; padding: 5px 0; display: flex; justify-content: space-between; }
+        .item:last-child { border: none; }
+        .date-tag { color: #39FF14; font-weight: bold; }
+
+        .btn { background: #39FF14; color: black; border: none; padding: 12px; border-radius: 8px; font-weight: bold; width: 100%; cursor: pointer; margin-top: 10px; }
     </style>
 </head>
 <body>
 
     <div class="header">
-        <h1>G&M FOOTBALL PRO</h1>
-        <p>Глобальна спільнота юних талантів</p>
+        <h1>G&M FOOTBALL HUB</h1>
+        <div id="currentDate" style="color: #888; font-size: 0.9em;"></div>
     </div>
 
-    <div class="registration-form">
-        <h3>➕ СТВОРИТИ КАРТКУ ГРАВЦЯ</h3>
-        <input type="text" id="parentName" placeholder="Ваше ім'я (батько/мати)">
-        <input type="text" id="childName" placeholder="Ім'я дитини">
-        <input type="number" id="childAge" placeholder="Вік дитини">
-        <input type="number" id="childHeight" placeholder="Ріст (см)">
-        <button class="btn" onclick="addPlayer()">ОПУБЛІКУВАТИ КАРТКУ</button>
+    <div class="card">
+        <span style="position:absolute; top:10px; right:15px; color:#39FF14; font-weight:bold;">#1</span>
+        <h2>ГЛІБ (11 років)</h2>
+        <div class="stats-row">
+            <div class="stat-item"><span class="stat-val">1.35 м</span><span class="stat-lab">Ріст</span></div>
+            <div class="stat-item"><span class="stat-val">33 кг</span><span class="stat-lab">Вага</span></div>
+            <div class="stat-item"><span class="stat-val">85%</span><span class="stat-lab">Форма</span></div>
+        </div>
+
+        <div class="chart-box">
+            <span class="stat-lab">Прогрес навичок (XP):</span>
+            <div class="bar-container"><div class="bar-fill" style="width: 75%;"></div></div>
+        </div>
+
+        <div class="schedule">
+            <strong style="font-size: 0.8em; color: #39FF14;">📅 РОЗКЛАД ТРЕНУВАНЬ:</strong>
+            <div class="item"><span>Пн, Ср, Пт</span> <span>17:00 - Футбол</span></div>
+            <div class="item"><span>Сб</span> <span>10:00 - ОФП</span></div>
+        </div>
     </div>
 
-    <h2 style="text-align: left; border-left: 4px solid #39FF14; padding-left: 10px;">СТРІЧКА ГРАВЦІВ</h2>
-    
-    <div id="playersFeed" class="players-feed">
-        <div class="player-card">
-            <span class="badge">ЗАСНОВНИК</span>
-            <div class="player-name">МАРК</div>
-            <div class="player-info">Вік: 11 років | Ріст: 145 см</div>
-            <div class="player-info">Батько: Юрій</div>
+    <div class="card">
+        <h2>МАРК (2 роки)</h2>
+        <div class="stats-row">
+            <div class="stat-item"><span class="stat-val">92 см</span><span class="stat-lab">Ріст</span></div>
+            <div class="stat-item"><span class="stat-val">14.5 кг</span><span class="stat-lab">Вага</span></div>
+            <div class="stat-item"><span class="stat-val">100%</span><span class="stat-lab">Енергія</span></div>
         </div>
-        <div class="player-card">
-            <span class="badge">ЗАСНОВНИК</span>
-            <div class="player-name">ГЛІБ</div>
-            <div class="player-info">Вік: 2 роки | Ріст: 92 см</div>
-            <div class="player-info">Батько: Юрій</div>
+
+        <div class="chart-box">
+            <span class="stat-lab">Розвиток моторики:</span>
+            <div class="bar-container"><div class="bar-fill" style="width: 40%;"></div></div>
         </div>
     </div>
+
+    <div class="calendar">
+        <h3 style="color: #39FF14; margin-top: 0;">⚽ КАЛЕНДАР ІГОР</h3>
+        <div class="item"><span class="date-tag">15 БЕР</span> <span>Фінал Кубка (Гліб)</span></div>
+        <div class="item"><span class="date-tag">22 БЕР</span> <span>Товариська гра</span></div>
+    </div>
+
+    <button class="btn" onclick="alert('Дані синхронізовано з хмарою!')">ОНОВИТИ ДАНІ СЕРВЕРУ</button>
 
     <script>
-        function addPlayer() {
-            const pName = document.getElementById('parentName').value;
-            const cName = document.getElementById('childName').value;
-            const cAge = document.getElementById('childAge').value;
-            const cHeight = document.getElementById('childHeight').value;
-
-            if(!pName || !cName) {
-                alert("Будь ласка, заповніть хоча б імена!");
-                return;
-            }
-
-            const feed = document.getElementById('playersFeed');
-            const newCard = document.createElement('div');
-            newCard.className = 'player-card';
-            newCard.innerHTML = `
-                <span class="badge">НОВИЙ ГРАВЕЦЬ</span>
-                <div class="player-name">${cName.toUpperCase()}</div>
-                <div class="player-info">Вік: ${cAge} років | Ріст: ${cHeight} см</div>
-                <div class="player-info">Батько/Мати: ${pName}</div>
-            `;
-            
-            feed.prepend(newCard); // Додаємо на початок списку
-
-            // Очищення полів
-            document.getElementById('parentName').value = '';
-            document.getElementById('childName').value = '';
-            document.getElementById('childAge').value = '';
-            document.getElementById('childHeight').value = '';
-            
-            alert("Картку створено! Тепер ви у спільноті.");
-        }
+        const options = { weekday: 'long', day: 'numeric', month: 'long' };
+        document.getElementById('currentDate').innerText = new Date().toLocaleDateString('uk-UA', options);
     </script>
 </body>
 </html>
