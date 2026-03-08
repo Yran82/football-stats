@@ -6,69 +6,60 @@
     <title>G&M Football Pro</title>
     <style>
         body { font-family: 'Segoe UI', Arial, sans-serif; background: #121212; color: #e0e0e0; text-align: center; margin: 0; padding: 20px; }
-        .card { background: #1e1e1e; border: 1px solid #39FF14; border-radius: 15px; padding: 20px; margin-bottom: 20px; }
-        h2 { color: #39FF14; margin: 0 0 15px 0; text-transform: uppercase; }
-        .timer-box { background: #2a2a2a; padding: 15px; border-radius: 10px; border: 2px solid #39FF14; margin-bottom: 20px; }
-        #timerDisplay { font-size: 2em; font-weight: bold; color: #39FF14; display: block; margin: 10px 0; }
-        .leaderboard { background: #252525; border-radius: 10px; padding: 15px; margin-bottom: 20px; text-align: left; }
-        .leader-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #333; }
-        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
-        .stat-box { background: #252525; padding: 10px; border-radius: 8px; }
-        .btn { background: #39FF14; color: #000; border: none; padding: 15px; border-radius: 10px; font-weight: bold; width: 100%; cursor: pointer; margin-top: 10px; font-size: 1em; text-decoration: none; display: inline-block; box-sizing: border-box; }
-        .btn-chat { background: #0088cc; color: white; }
-        .btn-timer { background: #ff4444; color: white; }
+        .date-header { background: #1e1e1e; border-bottom: 3px solid #39FF14; padding: 15px; margin-bottom: 20px; border-radius: 0 0 15px 15px; }
+        .date-text { font-size: 1.2em; font-weight: bold; color: #39FF14; text-transform: uppercase; }
+        
+        .tip-box { background: #252525; border: 1px dashed #39FF14; border-radius: 12px; padding: 15px; margin-bottom: 20px; box-shadow: inset 0 0 10px rgba(57, 255, 20, 0.1); }
+        .tip-label { color: #888; font-size: 0.8em; letter-spacing: 1px; }
+        #dailyTip { display: block; margin-top: 5px; font-weight: 500; font-style: italic; }
+
+        .card { background: #1e1e1e; border: 1px solid #333; border-radius: 15px; padding: 20px; margin-bottom: 20px; text-align: left; }
+        h2 { color: #39FF14; margin: 0 0 10px 0; font-size: 1.5em; }
+        
+        .btn { background: #39FF14; color: #000; border: none; padding: 15px; border-radius: 10px; font-weight: bold; width: 100%; cursor: pointer; margin-top: 10px; font-size: 1em; text-decoration: none; display: inline-block; text-align: center; }
+        .btn-photo { background: #4285F4; color: white; margin-top: 5px; }
     </style>
 </head>
 <body>
 
-    <div class="timer-box">
-        <span style="color: #888;">⏱ ТАЙМЕР ТРЕНУВАННЯ (45 ХВ)</span>
-        <span id="timerDisplay">45:00</span>
-        <button class="btn" id="timerBtn" onclick="toggleTimer()">СТАРТ</button>
+    <div class="date-header">
+        <div id="fullDate" class="date-text"></div>
     </div>
 
-    <div class="leaderboard">
-        <h3 style="color: #39FF14; margin-top: 0;">🏆 ТАБЛИЦЯ ЛІДЕРІВ</h3>
-        <div class="leader-item"><span>1. Марк</span> <span>2450 XP</span></div>
-        <div class="leader-item"><span>2. Гліб</span> <span>1820 XP</span></div>
-        <div class="leader-item" style="color: #888;"><span>3. Спільнота...</span> <span>---</span></div>
+    <div class="tip-box">
+        <span class="tip-label">⚽ ПОРАДА ДНЯ</span>
+        <span id="dailyTip">Завантаження поради...</span>
     </div>
 
     <div class="card">
         <h2>МАРК (11 років)</h2>
-        <div class="stats-grid">
-            <div class="stat-box"><b style="color:#39FF14">145 см</b><br><small>Ріст</small></div>
-            <div class="stat-box"><b style="color:#39FF14">12</b><br><small>Голи</small></div>
-        </div>
-        <a href="ВАШЕ_ПОСИЛАННЯ_НА_АЛЬБОМ" class="btn">📸 Фото матчів</a>
+        <p>Ріст: 145 см | Голи: 12</p>
+        <a href="ВСТАВТЕ_ПОСИЛАННЯ_НА_ALBUM_GOOGLE_PHOTOS" target="_blank" class="btn btn-photo">📸 ГАЛЕРЕЯ ТА ДОДАВАННЯ ФОТО</a>
     </div>
 
-    <a href="https://t.me/ВАШ_ЧАТ" class="btn btn-chat">💬 ЧАТ ДЛЯ БАТЬКІВ</a>
+    <div class="card" style="border-color: #555;">
+        <h2 style="color: #aaa;">ДОДАТИ СВОЮ ДИТИНУ</h2>
+        <p style="font-size: 0.9em; color: #777;">Ця функція в розробці. Незабаром ви зможете створювати власні картки!</p>
+        <button class="btn" style="background: #444; color: #888;" disabled>СТВОРЮЄТЬСЯ</button>
+    </div>
 
     <script>
-        let timeLeft = 45 * 60;
-        let timerId = null;
+        // Календар
+        const options = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' };
+        document.getElementById('fullDate').innerText = new Date().toLocaleDateString('uk-UA', options);
 
-        function toggleTimer() {
-            const btn = document.getElementById('timerBtn');
-            if (timerId) {
-                clearInterval(timerId);
-                timerId = null;
-                btn.innerText = 'ПРОДОВЖИТИ';
-                btn.style.background = '#39FF14';
-            } else {
-                btn.innerText = 'ПАУЗА';
-                btn.style.background = '#ff4444';
-                timerId = setInterval(() => {
-                    timeLeft--;
-                    let mins = Math.floor(timeLeft / 60);
-                    let secs = timeLeft % 60;
-                    document.getElementById('timerDisplay').innerText = 
-                        `${mins}:${secs < 10 ? '0' : ''}${secs}`;
-                    if (timeLeft <= 0) clearInterval(timerId);
-                }, 1000);
-            }
-        }
+        // Масив порад
+        const tips = [
+            "Пий воду кожні 20 хвилин під час тренування.",
+            "Сон 9+ годин — найкращий спосіб рости швидше.",
+            "Тренуй слабку ногу 15 хвилин щодня.",
+            "Горіхи та фрукти — найкращий перекус перед матчем.",
+            "Завжди роби розтяжку після гри, щоб уникнути травм.",
+            "Аналізуй гру Mbappé, щоб навчитися швидкості!"
+        ];
+        
+        // Рандомний вибір поради
+        document.getElementById('dailyTip').innerText = tips[Math.floor(Math.random() * tips.length)];
     </script>
 </body>
 </html>
