@@ -3,63 +3,64 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>G&M Football Global Hub</title>
+    <title>G&M Football Pro Elite</title>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #0f0f0f; color: white; margin: 0; padding: 15px; }
-        .card { background: #1a1a1a; border: 1px solid #333; border-radius: 15px; padding: 15px; margin-bottom: 20px; border-left: 4px solid #39FF14; }
-        h2 { color: #39FF14; margin: 0; text-transform: uppercase; font-size: 1.2em; }
-        .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 10px 0; }
-        .stat-item { background: #252525; padding: 5px; border-radius: 8px; text-align: center; font-size: 0.8em; border: 1px solid #444; }
-        .stat-val { display: block; color: #39FF14; font-weight: bold; }
-        .xp-bar { background: #333; border-radius: 10px; height: 10px; margin: 8px 0; overflow: hidden; }
-        .xp-fill { background: #39FF14; height: 100%; box-shadow: 0 0 8px #39FF14; }
-        .form-section { background: #1e1e1e; padding: 15px; border-radius: 12px; margin-bottom: 20px; border: 1px dashed #39FF14; }
-        input { width: 100%; padding: 10px; margin: 5px 0; border-radius: 5px; border: 1px solid #444; background: #111; color: white; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: #0a0a0a; color: white; margin: 0; padding: 15px; padding-bottom: 80px; }
+        .card { background: #161616; border: 1px solid #333; border-radius: 15px; padding: 15px; margin-bottom: 20px; border-left: 5px solid #39FF14; position: relative; }
+        h2 { color: #39FF14; margin: 0; font-size: 1.2em; text-transform: uppercase; }
+        .stats { display: flex; justify-content: space-between; font-size: 0.85em; color: #aaa; margin: 10px 0; }
+        .xp-bar { background: #333; height: 10px; border-radius: 5px; overflow: hidden; margin-top: 5px; }
+        .xp-fill { background: #39FF14; height: 100%; box-shadow: 0 0 10px #39FF14; }
+        
+        /* Чат */
+        #chat-container { background: #1a1a1a; border: 1px solid #39FF14; border-radius: 15px; padding: 10px; margin-top: 30px; }
+        #messages { height: 200px; overflow-y: auto; font-size: 0.9em; text-align: left; margin-bottom: 10px; padding: 5px; }
+        .msg { margin-bottom: 8px; border-bottom: 1px solid #222; padding-bottom: 4px; }
+        .msg-author { color: #39FF14; font-weight: bold; }
+
         .btn { background: #39FF14; color: black; border: none; padding: 12px; border-radius: 8px; font-weight: bold; width: 100%; cursor: pointer; margin-top: 10px; }
+        .btn-edit { position: absolute; top: 10px; right: 10px; background: #444; color: #fff; padding: 5px 10px; font-size: 0.7em; border-radius: 5px; width: auto; }
+        input { width: 100%; padding: 10px; margin: 5px 0; border-radius: 8px; border: 1px solid #444; background: #111; color: white; box-sizing: border-box; }
     </style>
 </head>
 <body>
 
-    <h1 style="color:#39FF14; text-align:center;">⚽ G&M GLOBAL HUB</h1>
+    <h1 style="text-align:center; color:#39FF14;">G&M FOOTBALL PRO</h1>
 
-    <div class="form-section">
-        <h3 style="margin-top:0;">🌟 СТВОРИТИ КАРТКУ ГРАВЦЯ</h3>
-        <input type="text" id="pName" placeholder="Ім'я дитини">
-        <input type="number" id="pAge" placeholder="Вік">
-        <input type="number" id="pHeight" placeholder="Ріст (см)">
-        <button class="btn" onclick="saveToFirebase()">ОПУБЛІКУВАТИ У СВІТ</button>
+    <div style="background: #1e1e1e; padding: 15px; border-radius: 12px; margin-bottom: 25px; border: 1px dashed #39FF14;">
+        <h3 style="margin:0 0 10px 0; font-size: 0.9em; color:#39FF14">📝 КАРТКА ГРАВЦЯ</h3>
+        <input type="text" id="name" placeholder="Ім'я дитини">
+        <input type="number" id="age" placeholder="Вік">
+        <input type="number" id="height" placeholder="Ріст (см)">
+        <button class="btn" onclick="register()">ЗБЕРЕГТИ В МЕРЕЖУ</button>
     </div>
 
     <div id="playersFeed">
         <div class="card">
             <h2>ГЛІБ (11 років)</h2>
-            <div class="stats-grid">
-                <div class="stat-item"><span class="stat-val">135 см</span>Ріст</div>
-                <div class="stat-item"><span class="stat-val">33 кг</span>Вага</div>
-                <div class="stat-item"><span class="stat-val">XP 2500</span>Досвід</div>
-            </div>
+            <div class="stats"><span>135 см</span> <span>33 кг</span> <span>XP: 2500</span></div>
             <div class="xp-bar"><div class="xp-fill" style="width: 85%;"></div></div>
         </div>
 
-        <div class="card">
+        <div class="card" style="border-left-color: #4285F4;">
             <h2>МАРК (2 роки)</h2>
-            <div class="stats-grid">
-                <div class="stat-item"><span class="stat-val">92 см</span>Ріст</div>
-                <div class="stat-item"><span class="stat-val">14.5 кг</span>Вага</div>
-                <div class="stat-item"><span class="stat-val">XP 500</span>Досвід</div>
-            </div>
-            <div class="xp-bar"><div class="xp-fill" style="width: 40%;"></div></div>
+            <div class="stats"><span>92 см</span> <span>14.5 кг</span> <span>XP: 500</span></div>
+            <div class="xp-bar"><div class="xp-fill" style="width: 35%; background: #4285F4;"></div></div>
         </div>
 
-        <hr style="border-color:#333">
-        <h3 style="color:#888">ГРАВЦІ СПІЛЬНОТИ:</h3>
-        <div id="dynamicFeed"></div>
+        <div id="communityFeed"></div>
+    </div>
+
+    <div id="chat-container">
+        <h3 style="margin:0; color:#39FF14; font-size: 1em;">💬 ЧАТ СПІЛЬНОТИ</h3>
+        <div id="messages"></div>
+        <input type="text" id="chatMsg" placeholder="Ваше повідомлення...">
+        <button class="btn" onclick="sendMsg()">ВІДПРАВИТИ</button>
     </div>
 
     <script>
-        // Ініціалізація вашого Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyADqPVJXhMwre4O3GV6VL84b8y1VA7XApg",
             authDomain: "gm-football.firebaseapp.com",
@@ -71,40 +72,63 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        // Функція збереження
-        async function saveToFirebase() {
-            const name = document.getElementById('pName').value;
-            const age = document.getElementById('pAge').value;
-            const height = document.getElementById('pHeight').value;
-
-            if(!name || !age) return alert("Вкажіть ім'я та вік!");
-
+        // РЕЄСТРАЦІЯ ТА РЕДАГУВАННЯ
+        async function register() {
+            const n = document.getElementById('name').value;
+            const a = document.getElementById('age').value;
+            const h = document.getElementById('height').value;
+            if(!n) return alert("Введіть ім'я!");
+            
             await db.collection("players").add({
-                name: name,
-                age: age,
-                height: height,
-                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                name: n, age: a, height: h, xp: 100,
+                time: firebase.firestore.FieldValue.serverTimestamp()
             });
-
-            alert("Картка опублікована!");
             location.reload();
         }
 
-        // Завантаження карток інших людей
-        db.collection("players").orderBy("timestamp", "desc").onSnapshot((snapshot) => {
-            const container = document.getElementById('dynamicFeed');
-            container.innerHTML = "";
-            snapshot.forEach((doc) => {
+        // ФУНКЦІЯ ЗМІНИ ДАНИХ (РЕДАГУВАННЯ)
+        async function editPlayer(id, oldName) {
+            const newHeight = prompt(`Змінити ріст для ${oldName} (см):`);
+            if (newHeight) {
+                await db.collection("players").doc(id).update({ height: newHeight });
+                alert("Дані оновлено!");
+            }
+        }
+
+        // ВІДОБРАЖЕННЯ ГРАВЦІВ
+        db.collection("players").orderBy("time", "desc").onSnapshot(snap => {
+            const cont = document.getElementById('communityFeed');
+            cont.innerHTML = "";
+            snap.forEach(doc => {
                 const p = doc.data();
-                container.innerHTML += `
+                cont.innerHTML += `
                     <div class="card" style="border-left-color: #555;">
+                        <button class="btn-edit" onclick="editPlayer('${doc.id}', '${p.name}')">⚙️ Редагувати</button>
                         <h2>${p.name.toUpperCase()} (${p.age} р.)</h2>
-                        <div class="stats-grid">
-                            <div class="stat-item"><span class="stat-val">${p.height} см</span>Ріст</div>
-                            <div class="stat-item"><span class="stat-val">XP 100</span>Досвід</div>
-                        </div>
+                        <div class="stats"><span>Ріст: ${p.height} см</span> <span>XP: ${p.xp}</span></div>
+                        <div class="xp-bar"><div class="xp-fill" style="width: ${p.xp}%; background: #777;"></div></div>
                     </div>`;
             });
+        });
+
+        // ЧАТ
+        async function sendMsg() {
+            const m = document.getElementById('chatMsg').value;
+            if(!m) return;
+            await db.collection("chat").add({
+                text: m, time: firebase.firestore.FieldValue.serverTimestamp()
+            });
+            document.getElementById('chatMsg').value = "";
+        }
+
+        db.collection("chat").orderBy("time", "asc").onSnapshot(snap => {
+            const box = document.getElementById('messages');
+            box.innerHTML = "";
+            snap.forEach(doc => {
+                const d = doc.data();
+                box.innerHTML += `<div class="msg"><span class="msg-author">Батько:</span> ${d.text}</div>`;
+            });
+            box.scrollTop = box.scrollHeight;
         });
     </script>
 </body>
