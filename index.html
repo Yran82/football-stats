@@ -7,57 +7,54 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #0a0a0a; color: white; margin: 0; padding: 15px; padding-bottom: 80px; }
+        body { font-family: 'Segoe UI', sans-serif; background: #0a0a0a; color: white; margin: 0; padding: 15px; padding-bottom: 100px; }
         .card { background: #161616; border: 1px solid #333; border-radius: 15px; padding: 15px; margin-bottom: 20px; border-left: 5px solid #39FF14; position: relative; }
         h2 { color: #39FF14; margin: 0; font-size: 1.2em; text-transform: uppercase; }
         .stats { display: flex; justify-content: space-between; font-size: 0.85em; color: #aaa; margin: 10px 0; }
-        .xp-bar { background: #333; height: 10px; border-radius: 5px; overflow: hidden; margin-top: 5px; }
-        .xp-fill { background: #39FF14; height: 100%; box-shadow: 0 0 10px #39FF14; }
         
-        /* Чат */
+        /* Чат з фото */
         #chat-container { background: #1a1a1a; border: 1px solid #39FF14; border-radius: 15px; padding: 10px; margin-top: 30px; }
-        #messages { height: 200px; overflow-y: auto; font-size: 0.9em; text-align: left; margin-bottom: 10px; padding: 5px; }
-        .msg { margin-bottom: 8px; border-bottom: 1px solid #222; padding-bottom: 4px; }
-        .msg-author { color: #39FF14; font-weight: bold; }
+        #messages { height: 250px; overflow-y: auto; font-size: 0.9em; margin-bottom: 10px; }
+        .msg { margin-bottom: 10px; padding: 8px; background: #222; border-radius: 8px; }
+        .msg img { max-width: 100%; border-radius: 8px; margin-top: 5px; display: block; }
+        .msg-author { color: #39FF14; font-weight: bold; font-size: 0.8em; }
 
         .btn { background: #39FF14; color: black; border: none; padding: 12px; border-radius: 8px; font-weight: bold; width: 100%; cursor: pointer; margin-top: 10px; }
-        .btn-edit { position: absolute; top: 10px; right: 10px; background: #444; color: #fff; padding: 5px 10px; font-size: 0.7em; border-radius: 5px; width: auto; }
+        .btn-edit { position: absolute; top: 10px; right: 10px; background: #333; color: #39FF14; border: 1px solid #39FF14; padding: 4px 8px; font-size: 0.7em; border-radius: 5px; }
         input { width: 100%; padding: 10px; margin: 5px 0; border-radius: 8px; border: 1px solid #444; background: #111; color: white; box-sizing: border-box; }
     </style>
 </head>
 <body>
 
-    <h1 style="text-align:center; color:#39FF14;">G&M FOOTBALL PRO</h1>
+    <h1 style="text-align:center; color:#39FF14;">G&M FOOTBALL HUB</h1>
 
     <div style="background: #1e1e1e; padding: 15px; border-radius: 12px; margin-bottom: 25px; border: 1px dashed #39FF14;">
-        <h3 style="margin:0 0 10px 0; font-size: 0.9em; color:#39FF14">📝 КАРТКА ГРАВЦЯ</h3>
+        <h3 style="margin:0 0 10px 0; font-size: 0.9em;">➕ НОВА КАРТКА ГРАВЦЯ</h3>
         <input type="text" id="name" placeholder="Ім'я дитини">
         <input type="number" id="age" placeholder="Вік">
         <input type="number" id="height" placeholder="Ріст (см)">
-        <button class="btn" onclick="register()">ЗБЕРЕГТИ В МЕРЕЖУ</button>
+        <input type="number" id="weight" placeholder="Вага (кг)">
+        <button class="btn" onclick="register()">ОПУБЛІКУВАТИ</button>
     </div>
 
     <div id="playersFeed">
         <div class="card">
             <h2>ГЛІБ (11 років)</h2>
             <div class="stats"><span>135 см</span> <span>33 кг</span> <span>XP: 2500</span></div>
-            <div class="xp-bar"><div class="xp-fill" style="width: 85%;"></div></div>
         </div>
-
         <div class="card" style="border-left-color: #4285F4;">
             <h2>МАРК (2 роки)</h2>
             <div class="stats"><span>92 см</span> <span>14.5 кг</span> <span>XP: 500</span></div>
-            <div class="xp-bar"><div class="xp-fill" style="width: 35%; background: #4285F4;"></div></div>
         </div>
-
         <div id="communityFeed"></div>
     </div>
 
     <div id="chat-container">
-        <h3 style="margin:0; color:#39FF14; font-size: 1em;">💬 ЧАТ СПІЛЬНОТИ</h3>
+        <h3 style="margin:0 0 10px 0; color:#39FF14;">💬 ФОТО-ЧАТ БАТЬКІВ</h3>
         <div id="messages"></div>
-        <input type="text" id="chatMsg" placeholder="Ваше повідомлення...">
-        <button class="btn" onclick="sendMsg()">ВІДПРАВИТИ</button>
+        <input type="text" id="chatMsg" placeholder="Повідомлення...">
+        <input type="text" id="chatImg" placeholder="Посилання на фото (необов'язково)">
+        <button class="btn" onclick="sendMsg()">ВІДПРАВИТИ У ЧАТ</button>
     </div>
 
     <script>
@@ -72,30 +69,35 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        // РЕЄСТРАЦІЯ ТА РЕДАГУВАННЯ
         async function register() {
             const n = document.getElementById('name').value;
             const a = document.getElementById('age').value;
             const h = document.getElementById('height').value;
-            if(!n) return alert("Введіть ім'я!");
-            
+            const w = document.getElementById('weight').value;
+            if(!n) return alert("Вкажіть ім'я!");
             await db.collection("players").add({
-                name: n, age: a, height: h, xp: 100,
+                name: n, age: a, height: h, weight: w,
                 time: firebase.firestore.FieldValue.serverTimestamp()
             });
             location.reload();
         }
 
-        // ФУНКЦІЯ ЗМІНИ ДАНИХ (РЕДАГУВАННЯ)
-        async function editPlayer(id, oldName) {
-            const newHeight = prompt(`Змінити ріст для ${oldName} (см):`);
-            if (newHeight) {
-                await db.collection("players").doc(id).update({ height: newHeight });
-                alert("Дані оновлено!");
-            }
+        // ПОВНЕ РЕДАГУВАННЯ ВСІХ ДАНИХ
+        async function editAll(id, name) {
+            const nName = prompt("Змінити ім'я:", name) || name;
+            const nAge = prompt("Змінити вік:");
+            const nHeight = prompt("Змінити ріст (см):");
+            const nWeight = prompt("Змінити вагу (кг):");
+            
+            await db.collection("players").doc(id).update({
+                name: nName,
+                age: nAge || "0",
+                height: nHeight || "0",
+                weight: nWeight || "0"
+            });
+            alert("Всі дані оновлено!");
         }
 
-        // ВІДОБРАЖЕННЯ ГРАВЦІВ
         db.collection("players").orderBy("time", "desc").onSnapshot(snap => {
             const cont = document.getElementById('communityFeed');
             cont.innerHTML = "";
@@ -103,22 +105,24 @@
                 const p = doc.data();
                 cont.innerHTML += `
                     <div class="card" style="border-left-color: #555;">
-                        <button class="btn-edit" onclick="editPlayer('${doc.id}', '${p.name}')">⚙️ Редагувати</button>
+                        <button class="btn-edit" onclick="editAll('${doc.id}', '${p.name}')">⚙️ Змінити все</button>
                         <h2>${p.name.toUpperCase()} (${p.age} р.)</h2>
-                        <div class="stats"><span>Ріст: ${p.height} см</span> <span>XP: ${p.xp}</span></div>
-                        <div class="xp-bar"><div class="xp-fill" style="width: ${p.xp}%; background: #777;"></div></div>
+                        <div class="stats"><span>Ріст: ${p.height} см</span> <span>Вага: ${p.weight} кг</span></div>
                     </div>`;
             });
         });
 
-        // ЧАТ
         async function sendMsg() {
-            const m = document.getElementById('chatMsg').value;
-            if(!m) return;
+            const txt = document.getElementById('chatMsg').value;
+            const img = document.getElementById('chatImg').value;
+            if(!txt && !img) return;
             await db.collection("chat").add({
-                text: m, time: firebase.firestore.FieldValue.serverTimestamp()
+                text: txt,
+                image: img,
+                time: firebase.firestore.FieldValue.serverTimestamp()
             });
             document.getElementById('chatMsg').value = "";
+            document.getElementById('chatImg').value = "";
         }
 
         db.collection("chat").orderBy("time", "asc").onSnapshot(snap => {
@@ -126,7 +130,8 @@
             box.innerHTML = "";
             snap.forEach(doc => {
                 const d = doc.data();
-                box.innerHTML += `<div class="msg"><span class="msg-author">Батько:</span> ${d.text}</div>`;
+                const imgHtml = d.image ? `<img src="${d.image}">` : "";
+                box.innerHTML += `<div class="msg"><span class="msg-author">Батько:</span><br>${d.text}${imgHtml}</div>`;
             });
             box.scrollTop = box.scrollHeight;
         });
