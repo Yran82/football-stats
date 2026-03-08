@@ -12,29 +12,28 @@
         h2 { color: #39FF14; margin: 0; font-size: 1.2em; text-transform: uppercase; }
         .stats { display: flex; justify-content: space-between; font-size: 0.85em; color: #aaa; margin: 10px 0; }
         
-        /* Чат з фото */
+        /* Стилі чату */
         #chat-container { background: #1a1a1a; border: 1px solid #39FF14; border-radius: 15px; padding: 10px; margin-top: 30px; }
-        #messages { height: 250px; overflow-y: auto; font-size: 0.9em; margin-bottom: 10px; }
-        .msg { margin-bottom: 10px; padding: 8px; background: #222; border-radius: 8px; }
-        .msg img { max-width: 100%; border-radius: 8px; margin-top: 5px; display: block; }
-        .msg-author { color: #39FF14; font-weight: bold; font-size: 0.8em; }
-
+        #messages { height: 300px; overflow-y: auto; margin-bottom: 10px; border-radius: 8px; background: #111; padding: 10px; }
+        .msg { background: #222; padding: 10px; border-radius: 10px; margin-bottom: 10px; border-left: 3px solid #39FF14; }
+        .msg img { max-width: 100%; border-radius: 8px; margin-top: 8px; display: block; border: 1px solid #333; }
+        
         .btn { background: #39FF14; color: black; border: none; padding: 12px; border-radius: 8px; font-weight: bold; width: 100%; cursor: pointer; margin-top: 10px; }
-        .btn-edit { position: absolute; top: 10px; right: 10px; background: #333; color: #39FF14; border: 1px solid #39FF14; padding: 4px 8px; font-size: 0.7em; border-radius: 5px; }
+        .btn-edit { position: absolute; top: 10px; right: 10px; background: #333; color: #39FF14; border: 1px solid #39FF14; padding: 5px 10px; font-size: 0.7em; border-radius: 5px; }
         input { width: 100%; padding: 10px; margin: 5px 0; border-radius: 8px; border: 1px solid #444; background: #111; color: white; box-sizing: border-box; }
     </style>
 </head>
 <body>
 
-    <h1 style="text-align:center; color:#39FF14;">G&M FOOTBALL HUB</h1>
+    <h1 style="text-align:center; color:#39FF14;">⚽ G&M FOOTBALL HUB</h1>
 
     <div style="background: #1e1e1e; padding: 15px; border-radius: 12px; margin-bottom: 25px; border: 1px dashed #39FF14;">
-        <h3 style="margin:0 0 10px 0; font-size: 0.9em;">➕ НОВА КАРТКА ГРАВЦЯ</h3>
+        <h3 style="margin:0 0 10px 0; font-size: 0.9em;">➕ ДОДАТИ НОВОГО ГРАВЦЯ</h3>
         <input type="text" id="name" placeholder="Ім'я дитини">
         <input type="number" id="age" placeholder="Вік">
         <input type="number" id="height" placeholder="Ріст (см)">
         <input type="number" id="weight" placeholder="Вага (кг)">
-        <button class="btn" onclick="register()">ОПУБЛІКУВАТИ</button>
+        <button class="btn" onclick="register()">ЗБЕРЕГТИ</button>
     </div>
 
     <div id="playersFeed">
@@ -50,11 +49,11 @@
     </div>
 
     <div id="chat-container">
-        <h3 style="margin:0 0 10px 0; color:#39FF14;">💬 ФОТО-ЧАТ БАТЬКІВ</h3>
+        <h3 style="margin:0 0 10px 0; color:#39FF14;">💬 ФОТО-ЧАТ СПІЛЬНОТИ</h3>
         <div id="messages"></div>
-        <input type="text" id="chatMsg" placeholder="Повідомлення...">
-        <input type="text" id="chatImg" placeholder="Посилання на фото (необов'язково)">
-        <button class="btn" onclick="sendMsg()">ВІДПРАВИТИ У ЧАТ</button>
+        <input type="text" id="chatMsg" placeholder="Ваше повідомлення...">
+        <input type="text" id="chatImg" placeholder="Посилання на фото (з Google Фото або ін.)">
+        <button class="btn" onclick="sendMsg()">ВІДПРАВИТИ</button>
     </div>
 
     <script>
@@ -69,6 +68,23 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
+        // 1. ПОВНЕ ВИПРАВЛЕННЯ ДАНИХ
+        async function editAll(id, currentName, currentAge, currentHeight, currentWeight) {
+            const nName = prompt("Змінити ім'я:", currentName) || currentName;
+            const nAge = prompt("Змінити вік:", currentAge) || currentAge;
+            const nHeight = prompt("Змінити ріст (см):", currentHeight) || currentHeight;
+            const nWeight = prompt("Змінити вагу (кг):", currentWeight) || currentWeight;
+            
+            await db.collection("players").doc(id).update({
+                name: nName,
+                age: nAge,
+                height: nHeight,
+                weight: nWeight
+            });
+            alert("Дані гравця успішно виправлено!");
+        }
+
+        // Реєстрація
         async function register() {
             const n = document.getElementById('name').value;
             const a = document.getElementById('age').value;
@@ -82,22 +98,7 @@
             location.reload();
         }
 
-        // ПОВНЕ РЕДАГУВАННЯ ВСІХ ДАНИХ
-        async function editAll(id, name) {
-            const nName = prompt("Змінити ім'я:", name) || name;
-            const nAge = prompt("Змінити вік:");
-            const nHeight = prompt("Змінити ріст (см):");
-            const nWeight = prompt("Змінити вагу (кг):");
-            
-            await db.collection("players").doc(id).update({
-                name: nName,
-                age: nAge || "0",
-                height: nHeight || "0",
-                weight: nWeight || "0"
-            });
-            alert("Всі дані оновлено!");
-        }
-
+        // Відображення карток з кнопкою повного редагування
         db.collection("players").orderBy("time", "desc").onSnapshot(snap => {
             const cont = document.getElementById('communityFeed');
             cont.innerHTML = "";
@@ -105,13 +106,14 @@
                 const p = doc.data();
                 cont.innerHTML += `
                     <div class="card" style="border-left-color: #555;">
-                        <button class="btn-edit" onclick="editAll('${doc.id}', '${p.name}')">⚙️ Змінити все</button>
+                        <button class="btn-edit" onclick="editAll('${doc.id}', '${p.name}', '${p.age}', '${p.height}', '${p.weight}')">⚙️ Виправити помилку</button>
                         <h2>${p.name.toUpperCase()} (${p.age} р.)</h2>
                         <div class="stats"><span>Ріст: ${p.height} см</span> <span>Вага: ${p.weight} кг</span></div>
                     </div>`;
             });
         });
 
+        // Чат з підтримкою фото
         async function sendMsg() {
             const txt = document.getElementById('chatMsg').value;
             const img = document.getElementById('chatImg').value;
@@ -130,8 +132,13 @@
             box.innerHTML = "";
             snap.forEach(doc => {
                 const d = doc.data();
-                const imgHtml = d.image ? `<img src="${d.image}">` : "";
-                box.innerHTML += `<div class="msg"><span class="msg-author">Батько:</span><br>${d.text}${imgHtml}</div>`;
+                const imgTag = d.image ? `<img src="${d.image}" onerror="this.style.display='none'">` : "";
+                box.innerHTML += `
+                    <div class="msg">
+                        <span style="color:#39FF14; font-weight:bold; font-size:0.8em;">Батько:</span><br>
+                        ${d.text}
+                        ${imgTag}
+                    </div>`;
             });
             box.scrollTop = box.scrollHeight;
         });
