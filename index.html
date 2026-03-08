@@ -4,104 +4,108 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>G&M Football Global Hub</title>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
     <style>
         body { font-family: 'Segoe UI', sans-serif; background: #0f0f0f; color: white; margin: 0; padding: 15px; }
         .card { background: #1a1a1a; border: 1px solid #333; border-radius: 15px; padding: 15px; margin-bottom: 20px; border-left: 4px solid #39FF14; }
-        h2 { color: #39FF14; margin: 0 0 10px 0; text-transform: uppercase; font-size: 1.2em; }
-        
-        /* Статистика */
-        .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 10px 0; }
+        h2 { color: #39FF14; margin: 0; text-transform: uppercase; font-size: 1.2em; }
+        .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 10px 0; }
         .stat-item { background: #252525; padding: 5px; border-radius: 8px; text-align: center; font-size: 0.8em; border: 1px solid #444; }
         .stat-val { display: block; color: #39FF14; font-weight: bold; }
-
-        /* Графік XP */
-        .xp-bar { background: #333; border-radius: 10px; height: 12px; margin: 10px 0; overflow: hidden; }
-        .xp-fill { background: linear-gradient(90deg, #39FF14, #00cc00); height: 100%; box-shadow: 0 0 10px #39FF14; }
-
-        /* Форма та Кнопки */
+        .xp-bar { background: #333; border-radius: 10px; height: 10px; margin: 8px 0; overflow: hidden; }
+        .xp-fill { background: #39FF14; height: 100%; box-shadow: 0 0 8px #39FF14; }
         .form-section { background: #1e1e1e; padding: 15px; border-radius: 12px; margin-bottom: 20px; border: 1px dashed #39FF14; }
         input { width: 100%; padding: 10px; margin: 5px 0; border-radius: 5px; border: 1px solid #444; background: #111; color: white; box-sizing: border-box; }
         .btn { background: #39FF14; color: black; border: none; padding: 12px; border-radius: 8px; font-weight: bold; width: 100%; cursor: pointer; margin-top: 10px; }
-        .btn-add-game { background: transparent; border: 1px solid #39FF14; color: #39FF14; font-size: 0.8em; margin-top: 5px; }
-
-        /* Календар */
-        .game-list { text-align: left; background: #222; padding: 10px; border-radius: 8px; margin-top: 10px; }
-        .game-item { border-bottom: 1px solid #333; padding: 5px 0; font-size: 0.9em; display: flex; justify-content: space-between; }
     </style>
 </head>
 <body>
 
-    <h1 style="color:#39FF14; text-align:center;">G&M FOOTBALL PRO</h1>
+    <h1 style="color:#39FF14; text-align:center;">⚽ G&M GLOBAL HUB</h1>
 
     <div class="form-section">
-        <h3 style="margin-top:0;">🌟 ПРИЄДНАТИСЯ ДО СПІЛЬНОТИ</h3>
-        <input type="text" id="newPlayerName" placeholder="Ім'я юного чемпіона">
-        <input type="number" id="newPlayerAge" placeholder="Вік">
-        <input type="number" id="newPlayerHeight" placeholder="Ріст (см)">
-        <button class="btn" onclick="addNewPlayer()">СТВОРТИ МОЮ КАРТКУ</button>
+        <h3 style="margin-top:0;">🌟 СТВОРИТИ КАРТКУ ГРАВЦЯ</h3>
+        <input type="text" id="pName" placeholder="Ім'я дитини">
+        <input type="number" id="pAge" placeholder="Вік">
+        <input type="number" id="pHeight" placeholder="Ріст (см)">
+        <button class="btn" onclick="saveToFirebase()">ОПУБЛІКУВАТИ У СВІТ</button>
     </div>
 
-    <div id="feed">
+    <div id="playersFeed">
         <div class="card">
             <h2>ГЛІБ (11 років)</h2>
-            <div class="stats-row">
-                <div class="stat-item"><span class="stat-val">1.35 м</span><span>Ріст</span></div>
-                <div class="stat-item"><span class="stat-val">33 кг</span><span>Вага</span></div>
-                <div class="stat-item"><span class="stat-val">XP 2450</span><span>Досвід</span></div>
+            <div class="stats-grid">
+                <div class="stat-item"><span class="stat-val">135 см</span>Ріст</div>
+                <div class="stat-item"><span class="stat-val">33 кг</span>Вага</div>
+                <div class="stat-item"><span class="stat-val">XP 2500</span>Досвід</div>
             </div>
-            <small style="color:#888;">Динаміка навичок:</small>
             <div class="xp-bar"><div class="xp-fill" style="width: 85%;"></div></div>
-            
-            <div class="game-list" id="gamesGlib">
-                <strong>📅 КАЛЕНДАР ІГОР:</strong>
-                <div class="game-item"><span>15 Березня</span> <span>Кубок Києва</span></div>
-            </div>
-            <button class="btn btn-add-game" onclick="addGame('gamesGlib')">+ Додати гру в розклад</button>
         </div>
 
         <div class="card">
             <h2>МАРК (2 роки)</h2>
-            <div class="stats-row">
-                <div class="stat-item"><span class="stat-val">92 см</span><span>Ріст</span></div>
-                <div class="stat-item"><span class="stat-val">14.5 кг</span><span>Вага</span></div>
-                <div class="stat-item"><span class="stat-val">XP 500</span><span>Досвід</span></div>
+            <div class="stats-grid">
+                <div class="stat-item"><span class="stat-val">92 см</span>Ріст</div>
+                <div class="stat-item"><span class="stat-val">14.5 кг</span>Вага</div>
+                <div class="stat-item"><span class="stat-val">XP 500</span>Досвід</div>
             </div>
-            <small style="color:#888;">Розвиток моторики:</small>
-            <div class="xp-bar"><div class="xp-fill" style="width: 45%;"></div></div>
+            <div class="xp-bar"><div class="xp-fill" style="width: 40%;"></div></div>
         </div>
+
+        <hr style="border-color:#333">
+        <h3 style="color:#888">ГРАВЦІ СПІЛЬНОТИ:</h3>
+        <div id="dynamicFeed"></div>
     </div>
 
     <script>
-        function addNewPlayer() {
-            const name = document.getElementById('newPlayerName').value;
-            const age = document.getElementById('newPlayerAge').value;
-            const height = document.getElementById('newPlayerHeight').value;
+        // Ініціалізація вашого Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyADqPVJXhMwre4O3GV6VL84b8y1VA7XApg",
+            authDomain: "gm-football.firebaseapp.com",
+            projectId: "gm-football",
+            storageBucket: "gm-football.firebasestorage.app",
+            messagingSenderId: "37289387027",
+            appId: "1:37289387027:web:27083c91ee7f62ee81cbe6"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
 
-            if(!name || !age) return alert("Заповніть ім'я та вік!");
+        // Функція збереження
+        async function saveToFirebase() {
+            const name = document.getElementById('pName').value;
+            const age = document.getElementById('pAge').value;
+            const height = document.getElementById('pHeight').value;
 
-            const playerHtml = `
-                <div class="card" style="border-left-color: #4285F4;">
-                    <h2>${name.toUpperCase()} (${age} років)</h2>
-                    <div class="stats-row">
-                        <div class="stat-item"><span class="stat-val">${height} см</span><span>Ріст</span></div>
-                        <div class="stat-item"><span class="stat-val">--</span><span>Вага</span></div>
-                        <div class="stat-item"><span class="stat-val">XP 100</span><span>Досвід</span></div>
-                    </div>
-                    <div class="xp-bar"><div class="xp-fill" style="width: 10%;"></div></div>
-                </div>
-            `;
-            document.getElementById('feed').insertAdjacentHTML('afterbegin', playerHtml);
-            alert("Вітаємо в команді!");
+            if(!name || !age) return alert("Вкажіть ім'я та вік!");
+
+            await db.collection("players").add({
+                name: name,
+                age: age,
+                height: height,
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            });
+
+            alert("Картка опублікована!");
+            location.reload();
         }
 
-        function addGame(listId) {
-            const game = prompt("Введіть дату та назву матчу (напр: 20 Березня - Фінал):");
-            if(game) {
-                const parts = game.split('-');
-                const html = `<div class="game-item"><span>${parts[0]}</span> <span>${parts[1] || ''}</span></div>`;
-                document.getElementById(listId).insertAdjacentHTML('beforeend', html);
-            }
-        }
+        // Завантаження карток інших людей
+        db.collection("players").orderBy("timestamp", "desc").onSnapshot((snapshot) => {
+            const container = document.getElementById('dynamicFeed');
+            container.innerHTML = "";
+            snapshot.forEach((doc) => {
+                const p = doc.data();
+                container.innerHTML += `
+                    <div class="card" style="border-left-color: #555;">
+                        <h2>${p.name.toUpperCase()} (${p.age} р.)</h2>
+                        <div class="stats-grid">
+                            <div class="stat-item"><span class="stat-val">${p.height} см</span>Ріст</div>
+                            <div class="stat-item"><span class="stat-val">XP 100</span>Досвід</div>
+                        </div>
+                    </div>`;
+            });
+        });
     </script>
 </body>
 </html>
