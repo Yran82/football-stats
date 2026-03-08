@@ -2,80 +2,73 @@
 <html lang="uk">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Pro Player Card - Analytics</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>G&M Football Pro</title>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #121212; color: white; margin: 0; padding: 15px; }
-        .card { background: #1e1e1e; border-radius: 25px; padding: 20px; box-shadow: 0 10px 20px rgba(0,0,0,0.5); border: 1px solid #333; margin-bottom: 20px; }
-        .header { text-align: center; margin-bottom: 20px; }
-        .name { font-size: 26px; font-weight: bold; color: #93d501; text-transform: uppercase; }
-        .age { color: #888; font-size: 14px; margin-bottom: 10px; }
-        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 20px; }
-        .stat-box { background: #2a2a2a; padding: 10px; border-radius: 15px; text-align: center; }
-        .stat-label { font-size: 12px; color: #aaa; text-transform: uppercase; margin-bottom: 5px; }
-        .stat-value { font-size: 18px; font-weight: bold; color: #fff; }
-        canvas { max-width: 100%; height: auto !important; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: #121212; color: #e0e0e0; text-align: center; margin: 0; padding: 20px; }
+        .card { background: #1e1e1e; border: 1px solid #39FF14; border-radius: 15px; padding: 20px; margin-bottom: 20px; }
+        h2 { color: #39FF14; margin: 0 0 15px 0; text-transform: uppercase; }
+        .timer-box { background: #2a2a2a; padding: 15px; border-radius: 10px; border: 2px solid #39FF14; margin-bottom: 20px; }
+        #timerDisplay { font-size: 2em; font-weight: bold; color: #39FF14; display: block; margin: 10px 0; }
+        .leaderboard { background: #252525; border-radius: 10px; padding: 15px; margin-bottom: 20px; text-align: left; }
+        .leader-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #333; }
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
+        .stat-box { background: #252525; padding: 10px; border-radius: 8px; }
+        .btn { background: #39FF14; color: #000; border: none; padding: 15px; border-radius: 10px; font-weight: bold; width: 100%; cursor: pointer; margin-top: 10px; font-size: 1em; text-decoration: none; display: inline-block; box-sizing: border-box; }
+        .btn-chat { background: #0088cc; color: white; }
+        .btn-timer { background: #ff4444; color: white; }
     </style>
 </head>
 <body>
 
-<div class="card">
-    <div class="header">
-        <div class="name" id="p_name">Завантаження...</div>
-        <div class="age" id="p_age">0 років</div>
+    <div class="timer-box">
+        <span style="color: #888;">⏱ ТАЙМЕР ТРЕНУВАННЯ (45 ХВ)</span>
+        <span id="timerDisplay">45:00</span>
+        <button class="btn" id="timerBtn" onclick="toggleTimer()">СТАРТ</button>
     </div>
-    
-    <canvas id="skillsChart"></canvas>
 
-    <div class="stats-grid">
-        <div class="stat-box">
-            <div class="stat-label">📏 Ріст</div>
-            <div class="stat-value"><span id="p_height">0</span> см</div>
-        </div>
-        <div class="stat-box">
-            <div class="stat-label">⚖️ Вага</div>
-            <div class="stat-value"><span id="p_weight">15</span> кг</div>
-        </div>
+    <div class="leaderboard">
+        <h3 style="color: #39FF14; margin-top: 0;">🏆 ТАБЛИЦЯ ЛІДЕРІВ</h3>
+        <div class="leader-item"><span>1. Марк</span> <span>2450 XP</span></div>
+        <div class="leader-item"><span>2. Гліб</span> <span>1820 XP</span></div>
+        <div class="leader-item" style="color: #888;"><span>3. Спільнота...</span> <span>---</span></div>
     </div>
-</div>
 
-<div class="card">
-    <div class="stat-label" style="text-align:center; margin-bottom:15px; color: #93d501;">📈 Динаміка розвитку</div>
-    <canvas id="historyChart"></canvas>
-</div>
+    <div class="card">
+        <h2>МАРК (11 років)</h2>
+        <div class="stats-grid">
+            <div class="stat-box"><b style="color:#39FF14">145 см</b><br><small>Ріст</small></div>
+            <div class="stat-box"><b style="color:#39FF14">12</b><br><small>Голи</small></div>
+        </div>
+        <a href="ВАШЕ_ПОСИЛАННЯ_НА_АЛЬБОМ" class="btn">📸 Фото матчів</a>
+    </div>
 
-<script>
-    // 1. Отримуємо дані з URL (від бота)
-    const params = new URLSearchParams(window.location.search);
-    const pName = params.get('name') || "Player";
-    
-    document.getElementById('p_name').innerText = pName.toUpperCase();
-    document.getElementById('p_age').innerText = (pName.toLowerCase() === 'glib') ? '11 років' : '2 роки';
-    document.getElementById('p_height').innerText = params.get('h') || "0";
-    document.getElementById('p_weight').innerText = params.get('w') || "0";
+    <a href="https://t.me/ВАШ_ЧАТ" class="btn btn-chat">💬 ЧАТ ДЛЯ БАТЬКІВ</a>
 
-    // 2. Налаштування Радару (Скіли)
-    const skillsData = [
-        parseInt(params.get('s')) || 50,
-        parseInt(params.get('d')) || 50,
-        parseInt(params.get('u')) || 50,
-        parseInt(params.get('p')) || 50,
-        parseInt(params.get('v')) || 50,
-        parseInt(params.get('f')) || 50
-    ];
+    <script>
+        let timeLeft = 45 * 60;
+        let timerId = null;
 
-    new Chart(document.getElementById('skillsChart'), {
-        type: 'radar',
-        data: {
-            labels: ['Швидкість', 'Дриблінг', 'Удар', 'Пас', 'Витривалість', 'Фізика'],
-            datasets: [{
-                data: skillsData,
-                backgroundColor: 'rgba(147, 213, 1, 0.2)',
-                borderColor: '#93d501',
-                borderWidth: 2,
-                pointRadius: 2
-            }]
-        },
-        options: {
-            scales: { r: { suggestedMin: 0, suggestedMax: 100, grid: {
+        function toggleTimer() {
+            const btn = document.getElementById('timerBtn');
+            if (timerId) {
+                clearInterval(timerId);
+                timerId = null;
+                btn.innerText = 'ПРОДОВЖИТИ';
+                btn.style.background = '#39FF14';
+            } else {
+                btn.innerText = 'ПАУЗА';
+                btn.style.background = '#ff4444';
+                timerId = setInterval(() => {
+                    timeLeft--;
+                    let mins = Math.floor(timeLeft / 60);
+                    let secs = timeLeft % 60;
+                    document.getElementById('timerDisplay').innerText = 
+                        `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+                    if (timeLeft <= 0) clearInterval(timerId);
+                }, 1000);
+            }
+        }
+    </script>
+</body>
+</html>
