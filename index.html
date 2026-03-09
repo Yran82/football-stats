@@ -9,34 +9,118 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-storage-compat.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black">
-    <link rel="apple-touch-icon" href="https://img.icons8.com/color/512/football.png">
-
     <style>
         :root { --main-green: #39FF14; --bg-dark: #0a0a0a; --card-bg: #161616; --danger: #ff4444; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg-dark); color: white; margin: 0; padding-bottom: 100px; overflow-x: hidden; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg-dark); color: white; margin: 0; padding-bottom: 100px; }
         
-        /* Навігація */
-        .bottom-nav { position: fixed; bottom: 0; width: 100%; background: #111; display: flex; justify-content: space-around; padding: 12px 0; border-top: 1px solid #333; z-index: 1000; box-shadow: 0 -5px 15px rgba(0,0,0,0.8); }
-        .nav-item { color: #888; font-size: 0.65em; text-align: center; cursor: pointer; flex: 1; transition: 0.3s; }
-        .nav-item.active { color: var(--main-green); transform: scale(1.1); font-weight: bold; }
+        .bottom-nav { position: fixed; bottom: 0; width: 100%; background: #111; display: flex; justify-content: space-around; padding: 12px 0; border-top: 1px solid #333; z-index: 1000; }
+        .nav-item { color: #888; font-size: 0.65em; text-align: center; cursor: pointer; flex: 1; }
+        .nav-item.active { color: var(--main-green); font-weight: bold; }
 
-        .tab-content { display: none; padding: 15px; animation: slideUp 0.3s ease-out; }
+        .tab-content { display: none; padding: 15px; }
         .tab-content.active { display: block; }
-        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
-        /* Картки та елементи адміна */
-        .card { background: var(--card-bg); border-radius: 18px; padding: 15px; margin-bottom: 20px; border-left: 5px solid var(--main-green); position: relative; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
-        .admin-only { display: none !important; } /* Приховано за замовчуванням */
+        .card { background: var(--card-bg); border-radius: 18px; padding: 15px; margin-bottom: 20px; border-left: 5px solid var(--main-green); position: relative; }
+        
+        /* Адмін-кнопки приховані через CSS за замовчуванням */
+        .admin-only { display: none !important; }
         .btn-del { background: none; border: 1px solid var(--danger); color: var(--danger); padding: 4px 10px; border-radius: 6px; font-size: 0.6em; cursor: pointer; }
 
-        /* Графіки */
-        .chart-container { width: 100%; max-width: 250px; margin: 15px auto; background: rgba(255,255,255,0.03); border-radius: 50%; padding: 10px; }
+        .chart-container { width: 100%; max-width: 250px; margin: 15px auto; }
 
-        input, button { width: 100%; padding: 12px; margin: 5px 0; border-radius: 10px; border: none; box-sizing: border-box; font-size: 0.9em; }
+        input, button { width: 100%; padding: 12px; margin: 5px 0; border-radius: 10px; border: none; box-sizing: border-box; }
         input { background: #222; color: white; border: 1px solid #333; }
         .btn-main { background: var(--main-green); color: black; font-weight: bold; cursor: pointer; }
 
-        /* Чат */
-        #msg-box { height: 400px; overflow-y: auto; padding-right:
+        #msg-box { height: 400px; overflow-y: auto; }
+        .msg-item { background: #1a1a1a; padding: 12px; border-radius: 12px; margin-bottom: 12px; position: relative; }
+        .msg-img { max-width: 100%; border-radius: 10px; margin-top: 8px; }
+    </style>
+</head>
+<body>
+
+    <div style="padding: 10px; text-align: right;">
+        <button onclick="adminLogin()" style="width: auto; padding: 5px 12px; font-size: 0.7em; background: #222; color: #444; border-radius: 20px;">🔐 Admin</button>
+    </div>
+
+    <div id="profile" class="tab-content active">
+        <h1 style="color:var(--main-green); text-align: center;">G&M PRO CAREER</h1>
+        <div class="card">
+            <h2>ГЛІБ (11 років)</h2>
+            <div class="chart-container"><canvas id="chartGlib"></canvas></div>
+            <div style="text-align:center; font-size: 0.8em; color: #aaa;">Ріст: 135 см | Вага: 33 кг</div>
+        </div>
+        <div class="card" style="border-left-color: #4285F4;">
+            <h2>МАРК (2 роки)</h2>
+            <div class="chart-container"><canvas id="chartMark"></canvas></div>
+            <div style="text-align:center; font-size: 0.8em; color: #aaa;">Ріст: 92 см | Вага: 14.5 кг</div>
+        </div>
+    </div>
+
+    <div id="community" class="tab-content">
+        <h1 style="color:var(--main-green)">LEADERBOARD</h1>
+        <div id="leaderboard"></div>
+    </div>
+
+    <div id="market" class="tab-content">
+        <h1 style="color:var(--main-green)">MARKETPLACE</h1>
+        <div class="card">
+            <input type="text" id="itemName" placeholder="Назва товару">
+            <input type="file" id="itemFile" accept="image/*">
+            <button class="btn-main" onclick="uploadMarketItem()">ВИСТАВИТИ</button>
+        </div>
+        <div id="market-list" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;"></div>
+    </div>
+
+    <div id="calendar" class="tab-content">
+        <h1 style="color:var(--main-green)">MATCH DAY</h1>
+        <div class="card">🏆 Фінал турніру (Гліб) - 15 Березня</div>
+    </div>
+
+    <div id="chat" class="tab-content">
+        <h1 style="color:var(--main-green)">TEAM CHAT</h1>
+        <div id="msg-box"></div>
+        <input type="text" id="chatInput" placeholder="Повідомлення...">
+        <input type="file" id="chatFile" accept="image/*">
+        <button class="btn-main" id="sendBtn" onclick="uploadAndSend()">ВІДПРАВИТИ</button>
+    </div>
+
+    <div class="bottom-nav">
+        <div class="nav-item active" onclick="switchTab('profile', this)">👤<br>Профіль</div>
+        <div class="nav-item" onclick="switchTab('community', this)">🏆<br>Рейтинг</div>
+        <div class="nav-item" onclick="switchTab('market', this)">🏪<br>Крамниця</div>
+        <div class="nav-item" onclick="switchTab('calendar', this)">📅<br>Події</div>
+        <div class="nav-item" onclick="switchTab('chat', this)">💬<br>Чат</div>
+    </div>
+
+    <script>
+        // FIREBASE CONFIG
+        const firebaseConfig = {
+            apiKey: "AIzaSyADqPVJXhMwre4O3GV6VL84b8y1VA7XApg",
+            authDomain: "gm-football.firebaseapp.com",
+            projectId: "gm-football",
+            storageBucket: "gm-football.firebasestorage.app",
+            messagingSenderId: "37289387027",
+            appId: "1:37289387027:web:27083c91ee7f62ee81cbe6"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const storage = firebase.storage();
+
+        // ADMIN LOGIN
+        function adminLogin() {
+            const p = prompt("Введіть пароль:");
+            if(p === "0608") {
+                alert("Адмін режим активовано!");
+                const style = document.createElement('style');
+                style.innerHTML = '.admin-only { display: block !important; }';
+                document.head.appendChild(style);
+            } else { alert("Невірний пароль!"); }
+        }
+
+        // CHARTS
+        function createRadar(id, color, data) {
+            new Chart(document.getElementById(id), {
+                type: 'radar',
+                data: {
+                    labels: ['PAC', 'SHO', 'PAS', 'DRI', 'DEF', 'PHY'],
