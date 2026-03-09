@@ -29,4 +29,144 @@
         input, button { width: 100%; padding: 12px; margin: 8px 0; border-radius: 10px; border: none; box-sizing: border-box; }
         input { background: #222; color: white; border: 1px solid #333; }
         .btn-main { background: var(--main-green); color: black; font-weight: bold; cursor: pointer; }
-        #msg-box { height: 350px; overflow-y: auto; background: #111; border-radius: 10px; padding:
+        #msg-box { height: 350px; overflow-y: auto; background: #111; border-radius: 10px; padding: 10px; margin-bottom: 10px; border: 1px solid #222; }
+        .msg-item { position: relative; margin-bottom: 15px; border-bottom: 1px solid #222; padding-bottom: 10px; }
+        .msg-img { max-width: 100%; border-radius: 10px; margin-top: 8px; display: block; }
+    </style>
+</head>
+<body>
+
+    <div id="profile" class="tab-content active">
+        <h1 style="color:var(--main-green)">👤 МОЙ ПРОФИЛЬ</h1>
+        <div class="card">
+            <h2>ГЛЕБ (11 лет)</h2>
+            <div style="display:flex; justify-content:space-between; font-size:0.8em; color:#aaa;">
+                <span>135 см / 33 кг</span> <span>XP: 2500</span>
+            </div>
+            <div style="background:#333; height:8px; border-radius:4px; margin-top:10px;"><div style="background:var(--main-green); width:85%; height:100%; border-radius:4px;"></div></div>
+        </div>
+        <div class="card" style="border-left-color: #4285F4;">
+            <h2>МАРК (2 года)</h2>
+            <div style="display:flex; justify-content:space-between; font-size:0.8em; color:#aaa;">
+                <span>92 см / 14.5 кг</span> <span>XP: 500</span>
+            </div>
+            <div style="background:#333; height:8px; border-radius:4px; margin-top:10px;"><div style="background:#4285F4; width:35%; height:100%; border-radius:4px;"></div></div>
+        </div>
+    </div>
+
+    <div id="community" class="tab-content">
+        <h1 style="color:var(--main-green)">🏆 РЕЙТИНГ</h1>
+        <div style="background:#1e1e1e; padding:15px; border-radius:15px; margin-bottom:20px; border: 1px dashed var(--main-green);">
+            <p style="margin:0 0 10px 0; font-size:0.9em;">📝 ДОБАВИТЬ ИГРОКА</p>
+            <input type="text" id="regName" placeholder="Имя">
+            <input type="number" id="regAge" placeholder="Возраст">
+            <button class="btn-main" onclick="registerPlayer()">ВНЕСТИ В СПИСОК</button>
+        </div>
+        <div id="leaderboard"></div>
+    </div>
+
+    <div id="calendar" class="tab-content">
+        <h1 style="color:var(--main-green)">📅 КАЛЕНДАРЬ</h1>
+        <div class="card">
+            <div style="color:var(--main-green); font-weight:bold;">15 МАРТА</div>
+            <div style="font-size:1.1em;">Тренировка по технике (Глеб)</div>
+            <div style="color:#888; font-size:0.8em;">База ОЗО, 16:30</div>
+        </div>
+    </div>
+
+    <div id="chat" class="tab-content">
+        <h1 style="color:var(--main-green)">💬 ЧАТ</h1>
+        <div id="msg-box"></div>
+        <input type="text" id="chatInput" placeholder="Сообщение...">
+        <input type="file" id="chatFile" accept="image/*">
+        <button class="btn-main" id="sendBtn" onclick="uploadAndSend()">ОТПРАВИТЬ</button>
+    </div>
+
+    <div class="bottom-nav">
+        <div class="nav-item active" onclick="switchTab('profile', this)">👤<br>Профиль</div>
+        <div class="nav-item" onclick="switchTab('community', this)">🏆<br>Рейтинг</div>
+        <div class="nav-item" onclick="switchTab('calendar', this)">📅<br>События</div>
+        <div class="nav-item" onclick="switchTab('chat', this)">💬<br>Чат</div>
+    </div>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyADqPVJXhMwre4O3GV6VL84b8y1VA7XApg",
+            authDomain: "gm-football.firebaseapp.com",
+            projectId: "gm-football",
+            storageBucket: "gm-football.firebasestorage.app",
+            messagingSenderId: "37289387027",
+            appId: "1:37289387027:web:27083c91ee7f62ee81cbe6"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const storage = firebase.storage();
+
+        function switchTab(id, el) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            el.classList.add('active');
+        }
+
+        async function registerPlayer() {
+            const n = document.getElementById('regName').value;
+            const a = document.getElementById('regAge').value;
+            if(!n) return;
+            await db.collection("players").add({ name: n, age: a, xp: 100, time: firebase.firestore.FieldValue.serverTimestamp() });
+            document.getElementById('regName').value = "";
+        }
+
+        // Удаление игрока
+        async function deleteItem(col, id) {
+            if(confirm("Вы уверены?")) await db.collection(col).doc(id).delete();
+        }
+
+        db.collection("players").orderBy("xp", "desc").onSnapshot(snap => {
+            const lb = document.getElementById('leaderboard');
+            lb.innerHTML = "";
+            snap.forEach(doc => {
+                const p = doc.data();
+                lb.innerHTML += `
+                    <div class="card" style="border-left-color: #555;">
+                        <button class="btn-del" onclick="deleteItem('players', '${doc.id}')">Удалить</button>
+                        <strong>${p.name}</strong> <span style="color:var(--main-green); float:right;">${p.xp} XP</span>
+                    </div>`;
+            });
+        });
+
+        async function uploadAndSend() {
+            const text = document.getElementById('chatInput').value;
+            const file = document.getElementById('chatFile').files[0];
+            const btn = document.getElementById('sendBtn');
+            if(!text && !file) return;
+            btn.disabled = true; btn.innerText = "⏳...";
+            let url = "";
+            if(file) {
+                const ref = storage.ref(`chat/${Date.now()}_${file.name}`);
+                await ref.put(file);
+                url = await ref.getDownloadURL();
+            }
+            await db.collection("chat").add({ text, img: url, time: firebase.firestore.FieldValue.serverTimestamp() });
+            document.getElementById('chatInput').value = ""; document.getElementById('chatFile').value = "";
+            btn.disabled = false; btn.innerText = "ОТПРАВИТЬ";
+        }
+
+        db.collection("chat").orderBy("time", "asc").onSnapshot(snap => {
+            const box = document.getElementById('msg-box');
+            box.innerHTML = "";
+            snap.forEach(doc => {
+                const m = doc.data();
+                const img = m.img ? `<img src="${m.img}" class="msg-img">` : "";
+                box.innerHTML += `
+                    <div class="msg-item">
+                        <button class="btn-del" onclick="deleteItem('chat', '${doc.id}')">×</button>
+                        <span style="color:var(--main-green); font-size:0.75em; font-weight:bold;">РОДИТЕЛЬ:</span><br>
+                        ${m.text}${img}
+                    </div>`;
+            });
+            box.scrollTop = box.scrollHeight;
+        });
+    </script>
+</body>
+</html>
