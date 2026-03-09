@@ -4,43 +4,36 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>G&M Football Pro</title>
-    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-storage-compat.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
     
     <style>
-        :root { --main-green: #39FF14; --bg-dark: #0a0a0a; --card-bg: #161616; --danger: #ff4444; }
-        body { font-family: sans-serif; background: var(--bg-dark); color: white; margin: 0; padding-bottom: 90px; }
+        :root { --green: #39FF14; --dark: #0a0a0a; }
+        body { font-family: sans-serif; background: var(--dark); color: white; margin: 0; padding-bottom: 70px; }
         
-        .bottom-nav { position: fixed; bottom: 0; width: 100%; background: #111; display: flex; justify-content: space-around; padding: 12px 0; border-top: 1px solid #333; z-index: 9999; }
-        .nav-item { color: #888; font-size: 0.7em; text-align: center; cursor: pointer; flex: 1; }
-        .nav-item.active { color: var(--main-green); font-weight: bold; }
+        /* Меню */
+        .nav { position: fixed; bottom: 0; width: 100%; background: #111; display: flex; border-top: 1px solid #333; z-index: 1000; }
+        .nav-btn { flex: 1; padding: 15px; text-align: center; font-size: 0.8em; color: #888; cursor: pointer; }
+        .nav-btn.active { color: var(--green); font-weight: bold; }
 
-        .tab-content { display: none; padding: 15px; }
-        .tab-content.active { display: block; }
+        .tab { display: none; padding: 15px; }
+        .tab.active { display: block; }
 
-        .card { background: var(--card-bg); border-radius: 15px; padding: 15px; margin-bottom: 15px; border-left: 5px solid var(--main-green); position: relative; }
+        /* Картки */
+        .card { background: #161616; border-radius: 15px; padding: 15px; margin-bottom: 15px; border-left: 5px solid var(--green); position: relative; }
         .admin-only { display: none !important; }
-        .btn-del { border: 1px solid var(--danger); color: var(--danger); background: none; padding: 4px; border-radius: 5px; float: right; cursor: pointer; }
+        .del-btn { color: red; border: 1px solid red; background: none; padding: 2px 8px; border-radius: 5px; float: right; cursor: pointer; }
 
-        canvas { max-width: 250px; margin: 0 auto; display: block; }
-        input, button { width: 100%; padding: 12px; margin: 5px 0; border-radius: 10px; border: none; box-sizing: border-box; }
+        input, button { width: 100%; padding: 12px; margin: 5px 0; border-radius: 8px; border: none; box-sizing: border-box; }
         input { background: #222; color: white; border: 1px solid #333; }
-        .btn-main { background: var(--main-green); color: black; font-weight: bold; }
+        .main-btn { background: var(--green); color: black; font-weight: bold; }
 
-        #msg-box { height: 350px; overflow-y: auto; background: #111; padding: 10px; border-radius: 10px; }
-        .msg-img { max-width: 100%; border-radius: 10px; margin-top: 5px; }
+        #msg-box { height: 300px; overflow-y: auto; background: #111; padding: 10px; border-radius: 10px; margin-bottom: 10px; }
+        .msg-img { max-width: 100%; border-radius: 8px; margin-top: 5px; }
     </style>
 </head>
 <body>
 
     <div style="text-align: right; padding: 10px;">
-        <button onclick="adminLogin()" style="width:auto; padding:5px 10px; font-size:0.7em;">🔐 Admin</button>
-    </div>
-
-    <div id="profile" class="tab-content active">
-        <div class="card">
-            <h2>ГЛІБ (11 років)</h2>
-            <canvas id="chartGlib"></canvas>
-            <p style="text-
+        <button onclick="adminLogin()" style="
