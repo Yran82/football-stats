@@ -121,11 +121,20 @@
         const storage = firebase.storage();
 
         let isAdmin = false;
+
+        // ВИПРАВЛЕНА ФУНКЦІЯ ВХОДУ
         function adminLogin() {
             const p = prompt("Password:");
             if(p === "0608") {
-                isAdmin = true; alert("Admin Mode Active!");
-                document.querySelectorAll('.admin-only').forEach(e => e.style.display = 'block');
+                isAdmin = true; 
+                alert("Admin Mode Active!");
+                // Знаходимо всі приховані кнопки і показуємо їх прямо зараз
+                const adminButtons = document.querySelectorAll('.admin-only');
+                adminButtons.forEach(btn => {
+                    btn.style.setProperty('display', 'block', 'important');
+                });
+            } else {
+                alert("Wrong password!");
             }
         }
 
@@ -176,14 +185,16 @@
             btn.disabled = false;
         }
 
+        // ОНОВЛЕНИЙ ЧАТ (з перевіркою isAdmin)
         db.collection("chat").orderBy("time", "asc").onSnapshot(snap => {
             const box = document.getElementById('msg-box');
             box.innerHTML = "";
             snap.forEach(doc => {
                 const m = doc.data();
                 const time = m.time ? new Date(m.time.seconds * 1000).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : "";
+                const displayStyle = isAdmin ? 'block' : 'none';
                 box.innerHTML += `<div class="msg-item">
-                    <button class="btn-del admin-only" style="display:${isAdmin?'block':'none'}; float:right" onclick="deleteItem('chat','${doc.id}')">×</button>
+                    <button class="btn-del admin-only" style="display:${displayStyle}; float:right" onclick="deleteItem('chat','${doc.id}')">×</button>
                     <div style="font-size:0.9em;">${m.text}</div>
                     ${m.img ? `<img src="${m.img}" class="msg-img">` : ""}
                     <div class="msg-time">${time}</div>
@@ -195,25 +206,30 @@
         async function uploadMarketItem() {
             const n = document.getElementById('itemName').value;
             const f = document.getElementById('itemFile').files[0];
+            if(!n || !f) return alert("Заповніть назву та фото!");
             const ref = storage.ref(`market/${Date.now()}`);
             await ref.put(f);
             const url = await ref.getDownloadURL();
             await db.collection("market").add({ name: n, img: url, time: firebase.firestore.FieldValue.serverTimestamp() });
+            alert("Товар додано!");
         }
 
+        // ОНОВЛЕНА КРАМНИЦЯ
         db.collection("market").orderBy("time", "desc").onSnapshot(snap => {
             const l = document.getElementById('market-list'); l.innerHTML = "";
             snap.forEach(doc => {
                 const i = doc.data();
-                l.innerHTML += `<div style="background:#1a1a1a; border-radius:10px; overflow:hidden;">
+                const displayStyle = isAdmin ? 'block' : 'none';
+                l.innerHTML += `<div style="background:#1a1a1a; border-radius:10px; overflow:hidden; position:relative;">
                     <img src="${i.img}" style="width:100%; height:100px; object-fit:cover;">
                     <div style="padding:5px; font-size:0.7em;">${i.name}</div>
-                    <button class="btn-del admin-only" style="display:${isAdmin?'block':'none'}" onclick="deleteItem('market','${doc.id}')">Видалити</button>
+                    <button class="btn-del admin-only" style="display:${displayStyle}; margin:5px;" onclick="deleteItem('market','${doc.id}')">Видалити</button>
                 </div>`;
             });
         });
 
-        async function deleteItem(c, i) { if(confirm("Del?")) await db.collection(c).doc(i).delete(); }
-    </script>
-</body>
-</html>
+        async function deleteItem(c, i) { 
+            if(confirm("Видалити цей запис назавжди?")) {
+                await db.collection(c).doc(i).delete(); 
+            }
+        }
