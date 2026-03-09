@@ -8,165 +8,25 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-storage-compat.js"></script>
     <style>
-        :root { --main-green: #39FF14; --bg-dark: #0a0a0a; --card-bg: #161616; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg-dark); color: white; margin: 0; padding-bottom: 80px; }
+        :root { --main-green: #39FF14; --bg-dark: #0a0a0a; --card-bg: #161616; --danger: #ff4444; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg-dark); color: white; margin: 0; padding-bottom: 90px; }
         
-        /* Навігація */
+        /* Навигация */
         .bottom-nav { position: fixed; bottom: 0; width: 100%; background: #111; display: flex; justify-content: space-around; padding: 12px 0; border-top: 1px solid #333; z-index: 1000; }
-        .nav-item { color: #888; font-size: 0.7em; text-align: center; cursor: pointer; flex: 1; }
-        .nav-item.active { color: var(--main-green); }
-        .nav-item i { display: block; font-size: 1.5em; margin-bottom: 3px; }
+        .nav-item { color: #888; font-size: 0.75em; text-align: center; cursor: pointer; flex: 1; text-decoration: none; }
+        .nav-item.active { color: var(--main-green); font-weight: bold; }
 
-        /* Контентні зони */
+        /* Контентные зоны */
         .tab-content { display: none; padding: 20px; animation: fadeIn 0.3s; }
         .tab-content.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        /* Картки та Елементи */
+        /* Карточки */
         .card { background: var(--card-bg); border-radius: 15px; padding: 15px; margin-bottom: 15px; border-left: 4px solid var(--main-green); position: relative; }
-        h2 { color: var(--main-green); margin: 0 0 10px 0; font-size: 1.1em; text-transform: uppercase; }
-        .stats { display: flex; justify-content: space-between; font-size: 0.8em; color: #aaa; }
-        .xp-bar { background: #333; height: 8px; border-radius: 4px; margin-top: 10px; overflow: hidden; }
-        .xp-fill { background: var(--main-green); height: 100%; box-shadow: 0 0 8px var(--main-green); }
-
-        /* Стилі Чат/Форми */
+        .btn-del { position: absolute; top: 10px; right: 10px; background: none; border: 1px solid var(--danger); color: var(--danger); padding: 3px 8px; border-radius: 5px; font-size: 0.6em; cursor: pointer; width: auto; }
+        
+        /* Формы и Чат */
         input, button { width: 100%; padding: 12px; margin: 8px 0; border-radius: 10px; border: none; box-sizing: border-box; }
         input { background: #222; color: white; border: 1px solid #333; }
         .btn-main { background: var(--main-green); color: black; font-weight: bold; cursor: pointer; }
-        #msg-box { height: 300px; overflow-y: auto; background: #111; border-radius: 10px; padding: 10px; margin-bottom: 10px; }
-        .msg-img { max-width: 100%; border-radius: 10px; margin-top: 8px; }
-    </style>
-</head>
-<body>
-
-    <div id="profile" class="tab-content active">
-        <h1 style="color:var(--main-green)">МІЙ ПРОФІЛЬ</h1>
-        <div class="card">
-            <h2>ГЛІБ (11 років)</h2>
-            <div class="stats"><span>135 см</span> <span>33 кг</span> <span>XP: 2500</span></div>
-            <div class="xp-bar"><div class="xp-fill" style="width: 85%;"></div></div>
-        </div>
-        <div class="card" style="border-left-color: #4285F4;">
-            <h2>МАРК (2 роки)</h2>
-            <div class="stats"><span>92 см</span> <span>14.5 кг</span> <span>XP: 500</span></div>
-            <div class="xp-bar"><div class="xp-fill" style="width: 35%; background: #4285F4;"></div></div>
-        </div>
-    </div>
-
-    <div id="community" class="tab-content">
-        <h1 style="color:var(--main-green)">СПІЛЬНОТА</h1>
-        <div style="background:#1e1e1e; padding:15px; border-radius:15px; margin-bottom:20px;">
-            <p style="margin:0 0 10px 0; font-size:0.9em;">➕ ЗАРЕЄСТРУВАТИ НОВОГО ГРАВЦЯ</p>
-            <input type="text" id="regName" placeholder="Ім'я дитини">
-            <input type="number" id="regAge" placeholder="Вік">
-            <button class="btn-main" onclick="registerPlayer()">ДОДАТИ В РЕЙТИНГ</button>
-        </div>
-        <div id="leaderboard"></div>
-    </div>
-
-    <div id="calendar" class="tab-content">
-        <h1 style="color:var(--main-green)">КАЛЕНДАР ІГОР</h1>
-        <div class="card">
-            <div style="color:var(--main-green); font-weight:bold;">15 БЕРЕЗНЯ</div>
-            <div style="font-size:1.2em;">Фінал Кубка (Гліб)</div>
-            <div style="color:#888; font-size:0.8em;">Стадіон "Локомотив", 10:00</div>
-        </div>
-        <button class="btn-main" style="background:#333; color:white;">+ ДОДАТИ ПОДІЮ</button>
-    </div>
-
-    <div id="chat" class="tab-content">
-        <h1 style="color:var(--main-green)">ЧАТ БАТЬКІВ</h1>
-        <div id="msg-box"></div>
-        <input type="text" id="chatInput" placeholder="Ваше повідомлення...">
-        <input type="file" id="chatFile" accept="image/*" style="font-size:0.7em;">
-        <button class="btn-main" id="sendBtn" onclick="uploadAndSend()">ВІДПРАВИТИ</button>
-    </div>
-
-    <div class="bottom-nav">
-        <div class="nav-item active" onclick="switchTab('profile', this)">👤<br>Профіль</div>
-        <div class="nav-item" onclick="switchTab('community', this)">🏆<br>Спільнота</div>
-        <div class="nav-item" onclick="switchTab('calendar', this)">📅<br>Календар</div>
-        <div class="nav-item" onclick="switchTab('chat', this)">💬<br>Чат</div>
-    </div>
-
-    <script>
-        // FIREBASE CONFIG
-        const firebaseConfig = {
-            apiKey: "AIzaSyADqPVJXhMwre4O3GV6VL84b8y1VA7XApg",
-            authDomain: "gm-football.firebaseapp.com",
-            projectId: "gm-football",
-            storageBucket: "gm-football.firebasestorage.app",
-            messagingSenderId: "37289387027",
-            appId: "1:37289387027:web:27083c91ee7f62ee81cbe6"
-        };
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
-        const storage = firebase.storage();
-
-        // ПЕРЕМИКАННЯ ВКЛАДОК
-        function switchTab(tabId, el) {
-            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-            document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-            document.getElementById(tabId).classList.add('active');
-            el.classList.add('active');
-        }
-
-        // РЕЄСТРАЦІЯ
-        async function registerPlayer() {
-            const name = document.getElementById('regName').value;
-            const age = document.getElementById('regAge').value;
-            if(!name || !age) return alert("Заповніть дані!");
-            await db.collection("players").add({ name, age, xp: 100, time: firebase.firestore.FieldValue.serverTimestamp() });
-            alert("Гравця додано!");
-            document.getElementById('regName').value = "";
-        }
-
-        // РЕЙТИНГ (Leaderboard)
-        db.collection("players").orderBy("xp", "desc").onSnapshot(snap => {
-            const lb = document.getElementById('leaderboard');
-            lb.innerHTML = "";
-            snap.forEach(doc => {
-                const p = doc.data();
-                lb.innerHTML += `
-                    <div class="card" style="border-left-color: #555;">
-                        <div style="display:flex; justify-content:space-between">
-                            <strong>${p.name.toUpperCase()}</strong>
-                            <span style="color:var(--main-green)">${p.xp} XP</span>
-                        </div>
-                    </div>`;
-            });
-        });
-
-        // ЧАТ ТА ФОТО
-        async function uploadAndSend() {
-            const text = document.getElementById('chatInput').value;
-            const file = document.getElementById('chatFile').files[0];
-            const btn = document.getElementById('sendBtn');
-            if(!text && !file) return;
-            btn.disabled = true; btn.innerText = "ЗБЕРЕЖЕННЯ...";
-            let url = "";
-            if(file) {
-                const ref = storage.ref(`chat/${Date.now()}_${file.name}`);
-                await ref.put(file);
-                url = await ref.getDownloadURL();
-            }
-            await db.collection("chat").add({ text, img: url, time: firebase.firestore.FieldValue.serverTimestamp() });
-            document.getElementById('chatInput').value = ""; document.getElementById('chatFile').value = "";
-            btn.disabled = false; btn.innerText = "ВІДПРАВИТИ";
-        }
-
-        db.collection("chat").orderBy("time", "asc").onSnapshot(snap => {
-            const box = document.getElementById('msg-box');
-            box.innerHTML = "";
-            snap.forEach(doc => {
-                const m = doc.data();
-                const img = m.img ? `<img src="${m.img}" class="msg-img">` : "";
-                box.innerHTML += `<div style="margin-bottom:15px; border-bottom:1px solid #222; padding-bottom:10px;">
-                    <span style="color:var(--main-green); font-size:0.8em; font-weight:bold;">Батько:</span><br>
-                    ${m.text}${img}</div>`;
-            });
-            box.scrollTop = box.scrollHeight;
-        });
-    </script>
-</body>
-</html>
+        #msg-box { height: 350px; overflow-y: auto; background: #111; border-radius: 10px; padding:
