@@ -11,24 +11,152 @@
         :root { --main-green: #39FF14; --bg-dark: #0a0a0a; --card-bg: #161616; --danger: #ff4444; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg-dark); color: white; margin: 0; padding-bottom: 90px; }
         
-        /* Навігація */
-        .bottom-nav { position: fixed; bottom: 0; width: 100%; background: #111; display: flex; justify-content: space-around; padding: 12px 0; border-top: 1px solid #333; z-index: 1000; box-shadow: 0 -5px 15px rgba(0,0,0,0.5); }
-        .nav-item { color: #888; font-size: 0.75em; text-align: center; cursor: pointer; flex: 1; transition: 0.3s; }
-        .nav-item.active { color: var(--main-green); transform: scale(1.1); font-weight: bold; }
+        .bottom-nav { position: fixed; bottom: 0; width: 100%; background: #111; display: flex; justify-content: space-around; padding: 10px 0; border-top: 1px solid #333; z-index: 1000; }
+        .nav-item { color: #888; font-size: 0.65em; text-align: center; cursor: pointer; flex: 1; transition: 0.2s; }
+        .nav-item.active { color: var(--main-green); font-weight: bold; transform: scale(1.1); }
 
-        /* Контент */
-        .tab-content { display: none; padding: 20px; animation: slideUp 0.3s ease-out; }
+        .tab-content { display: none; padding: 15px; animation: slideUp 0.3s ease-out; }
         .tab-content.active { display: block; }
-        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        @keyframes slideUp { from { transform: translateY(15px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
-        /* Картки */
         .card { background: var(--card-bg); border-radius: 15px; padding: 15px; margin-bottom: 15px; border-left: 4px solid var(--main-green); position: relative; }
         .btn-del { position: absolute; top: 10px; right: 10px; background: none; border: 1px solid var(--danger); color: var(--danger); padding: 3px 8px; border-radius: 5px; font-size: 0.6em; cursor: pointer; }
         
-        /* Чат та Лайки */
-        .msg-item { position: relative; margin-bottom: 20px; background: #1a1a1a; padding: 12px; border-radius: 12px; border: 1px solid #222; }
-        .msg-img { max-width: 100%; border-radius: 10px; margin: 10px 0; display: block; }
-        .like-row { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
-        .like-btn { background: #333; border: none; color: white; padding: 5px 12px; border-radius: 20px; cursor: pointer; font-size: 0.85em; display: flex; align-items: center; gap: 5px; transition: 0.2s; }
-        .like-btn:active { transform: scale(0.9); background: #444; }
-        .like-btn.liked { color: #ff4
+        .market-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .market-item { background: #1a1a1a; border-radius: 10px; overflow: hidden; border: 1px solid #333; }
+        .market-img { width: 100%; height: 120px; object-fit: cover; }
+        .market-info { padding: 8px; font-size: 0.8em; }
+
+        input, button, select { width: 100%; padding: 12px; margin: 5px 0; border-radius: 10px; border: none; box-sizing: border-box; }
+        input, select { background: #222; color: white; border: 1px solid #333; }
+        .btn-main { background: var(--main-green); color: black; font-weight: bold; cursor: pointer; }
+        #msg-box { height: 350px; overflow-y: auto; }
+        .msg-item { background: #1a1a1a; padding: 12px; border-radius: 12px; margin-bottom: 15px; position: relative; }
+        .msg-img { max-width: 100%; border-radius: 10px; margin-top: 8px; }
+    </style>
+</head>
+<body>
+
+    <div id="profile" class="tab-content active">
+        <h1 style="color:var(--main-green)">👤 ПРОФІЛЬ</h1>
+        <div class="card"><h2>ГЛІБ (11 років)</h2><div style="font-size:0.8em; color:#aaa;">135 см / 33 кг</div></div>
+        <div class="card" style="border-left-color: #4285F4;"><h2>МАРК (2 роки)</h2><div style="font-size:0.8em; color:#aaa;">92 см / 14.5 кг</div></div>
+    </div>
+
+    <div id="community" class="tab-content">
+        <h1 style="color:var(--main-green)">🏆 РЕЙТИНГ</h1>
+        <div id="leaderboard"></div>
+    </div>
+
+    <div id="market" class="tab-content">
+        <h1 style="color:var(--main-green)">🏪 КРАМНИЦЯ</h1>
+        <div style="background:#1e1e1e; padding:10px; border-radius:12px; margin-bottom:15px;">
+            <input type="text" id="itemName" placeholder="Назва (напр. Бутси 35р)">
+            <input type="file" id="itemFile" accept="image/*">
+            <button class="btn-main" onclick="uploadMarketItem()">ВИСТАВИТИ НА ПРОДАЖ</button>
+        </div>
+        <div class="market-grid" id="market-list"></div>
+    </div>
+
+    <div id="calendar" class="tab-content">
+        <h1 style="color:var(--main-green)">📅 ПОДІЇ</h1>
+        <div class="card"><strong>15 БЕРЕЗНЯ</strong><br>Матч (Гліб)</div>
+    </div>
+
+    <div id="chat" class="tab-content">
+        <h1 style="color:var(--main-green)">💬 ЧАТ</h1>
+        <div id="msg-box"></div>
+        <input type="text" id="chatInput" placeholder="Повідомлення...">
+        <input type="file" id="chatFile" accept="image/*">
+        <button class="btn-main" id="sendBtn" onclick="uploadAndSend()">ВІДПРАВИТИ</button>
+    </div>
+
+    <div class="bottom-nav">
+        <div class="nav-item active" onclick="switchTab('profile', this)">👤<br>Профіль</div>
+        <div class="nav-item" onclick="switchTab('community', this)">🏆<br>Рейтинг</div>
+        <div class="nav-item" onclick="switchTab('market', this)">🏪<br>Крамниця</div>
+        <div class="nav-item" onclick="switchTab('calendar', this)">📅<br>Події</div>
+        <div class="nav-item" onclick="switchTab('chat', this)">💬<br>Чат</div>
+    </div>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyADqPVJXhMwre4O3GV6VL84b8y1VA7XApg",
+            authDomain: "gm-football.firebaseapp.com",
+            projectId: "gm-football",
+            storageBucket: "gm-football.firebasestorage.app",
+            messagingSenderId: "37289387027",
+            appId: "1:37289387027:web:27083c91ee7f62ee81cbe6"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const storage = firebase.storage();
+
+        function switchTab(id, el) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            el.classList.add('active');
+        }
+
+        // КРАМНИЦЯ
+        async function uploadMarketItem() {
+            const name = document.getElementById('itemName').value;
+            const file = document.getElementById('itemFile').files[0];
+            if(!name || !file) return alert("Додайте назву та фото!");
+            const ref = storage.ref(`market/${Date.now()}_${file.name}`);
+            await ref.put(file);
+            const url = await ref.getDownloadURL();
+            await db.collection("market").add({ name, img: url, time: firebase.firestore.FieldValue.serverTimestamp() });
+            alert("Товар додано!");
+        }
+
+        db.collection("market").orderBy("time", "desc").onSnapshot(snap => {
+            const list = document.getElementById('market-list');
+            list.innerHTML = "";
+            snap.forEach(doc => {
+                const item = doc.data();
+                list.innerHTML += `<div class="market-item">
+                    <img src="${item.img}" class="market-img">
+                    <div class="market-info"><strong>${item.name}</strong></div>
+                    <button class="btn-del" style="position:relative; top:0; right:0; margin:5px;" onclick="deleteItem('market','${doc.id}')">Видалити</button>
+                </div>`;
+            });
+        });
+
+        // ЧАТ, РЕЙТИНГ ТА ВИДАЛЕННЯ
+        async function deleteItem(col, id) { if(confirm("Видалити?")) await db.collection(col).doc(id).delete(); }
+
+        async function uploadAndSend() {
+            const text = document.getElementById('chatInput').value;
+            const file = document.getElementById('chatFile').files[0];
+            let url = "";
+            if(file) {
+                const ref = storage.ref(`chat/${Date.now()}`);
+                await ref.put(file);
+                url = await ref.getDownloadURL();
+            }
+            await db.collection("chat").add({ text, img: url, likes: 0, time: firebase.firestore.FieldValue.serverTimestamp() });
+            document.getElementById('chatInput').value = "";
+        }
+
+        db.collection("chat").orderBy("time", "asc").onSnapshot(snap => {
+            const box = document.getElementById('msg-box');
+            box.innerHTML = "";
+            snap.forEach(doc => {
+                const m = doc.data();
+                box.innerHTML += `<div class="msg-item">
+                    <button class="btn-del" onclick="deleteItem('chat','${doc.id}')">×</button>
+                    ${m.text}${m.img ? `<img src="${m.img}" class="msg-img">` : ""}
+                </div>`;
+            });
+            box.scrollTop = box.scrollHeight;
+        });
+
+        db.collection("players").orderBy("xp", "desc").onSnapshot(snap => {
+            const lb = document.getElementById('leaderboard'); lb.innerHTML = "";
+            snap.forEach(doc => { lb.innerHTML += `<div class="card"><strong>${doc.data().name}</strong></div>`; });
+        });
+    </script>
+</body>
+</html>
