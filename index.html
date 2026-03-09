@@ -2,38 +2,158 @@
 <html lang="uk">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>G&M Football Pro</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>G&M Football</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
     
     <style>
-        :root { --green: #39FF14; --dark: #0a0a0a; }
-        body { font-family: sans-serif; background: var(--dark); color: white; margin: 0; padding-bottom: 70px; }
+        body { font-family: sans-serif; background: #000; color: #fff; margin: 0; padding: 0; }
+        .header { background: #111; padding: 15px; text-align: center; border-bottom: 1px solid #333; }
+        .nav { position: fixed; bottom: 0; width: 100%; background: #111; display: flex; height: 60px; border-top: 1px solid #333; }
+        .nav-btn { flex: 1; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #888; }
+        .nav-btn.active { color: #39FF14; font-weight: bold; }
         
-        /* Меню */
-        .nav { position: fixed; bottom: 0; width: 100%; background: #111; display: flex; border-top: 1px solid #333; z-index: 1000; }
-        .nav-btn { flex: 1; padding: 15px; text-align: center; font-size: 0.8em; color: #888; cursor: pointer; }
-        .nav-btn.active { color: var(--green); font-weight: bold; }
-
-        .tab { display: none; padding: 15px; }
+        .tab { display: none; padding: 15px; padding-bottom: 80px; }
         .tab.active { display: block; }
-
-        /* Картки */
-        .card { background: #161616; border-radius: 15px; padding: 15px; margin-bottom: 15px; border-left: 5px solid var(--green); position: relative; }
+        
+        .card { background: #161616; border-radius: 12px; padding: 15px; margin-bottom: 10px; border-left: 4px solid #39FF14; }
         .admin-only { display: none !important; }
-        .del-btn { color: red; border: 1px solid red; background: none; padding: 2px 8px; border-radius: 5px; float: right; cursor: pointer; }
-
-        input, button { width: 100%; padding: 12px; margin: 5px 0; border-radius: 8px; border: none; box-sizing: border-box; }
-        input { background: #222; color: white; border: 1px solid #333; }
-        .main-btn { background: var(--green); color: black; font-weight: bold; }
-
-        #msg-box { height: 300px; overflow-y: auto; background: #111; padding: 10px; border-radius: 10px; margin-bottom: 10px; }
-        .msg-img { max-width: 100%; border-radius: 8px; margin-top: 5px; }
+        
+        input, button { width: 100%; padding: 12px; margin: 5px 0; border-radius: 8px; border: none; font-size: 16px; }
+        input { background: #222; color: #fff; border: 1px solid #333; }
+        .btn-green { background: #39FF14; color: #000; font-weight: bold; }
+        
+        #msg-box { height: 300px; overflow-y: auto; background: #050505; border-radius: 10px; padding: 10px; margin-bottom: 10px; }
+        img { max-width: 100%; border-radius: 8px; margin-top: 5px; }
     </style>
 </head>
 <body>
 
-    <div style="text-align: right; padding: 10px;">
-        <button onclick="adminLogin()" style="
+    <div class="header">
+        <span style="color:#39FF14; font-weight:bold;">G&M PRO HUB</span>
+        <button onclick="adminLogin()" style="float:right; width:auto; padding:2px 10px; font-size:10px; background:#222; color:#555;">🔐</button>
+    </div>
+
+    <div id="tab1" class="tab active">
+        <div class="card">
+            <h3>ГЛІБ (11 років)</h3>
+            <p>Ріст: 135 см | Вага: 33 кг</p>
+        </div>
+        <div class="card" style="border-left-color: #4285F4;">
+            <h3>МАРК (2 роки)</h3>
+            <p>Ріст: 92 см | Вага: 14.5 кг</p>
+        </div>
+    </div>
+
+    <div id="tab2" class="tab">
+        <div id="msg-box">Завантаження чату...</div>
+        <input type="text" id="mText" placeholder="Повідомлення...">
+        <input type="file" id="mFile" accept="image/*">
+        <button class="btn-green" onclick="send()">ВІДПРАВИТИ</button>
+    </div>
+
+    <div id="tab3" class="tab">
+        <div class="card">
+            <input type="text" id="iName" placeholder="Що віддаєте?">
+            <input type="file" id="iFile" accept="image/*">
+            <button class="btn-green" onclick="addM()">ДОДАТИ ТОВАР</button>
+        </div>
+        <div id="m-list"></div>
+    </div>
+
+    <div class="nav">
+        <div class="nav-btn active" onclick="go('tab1', this)">ПРОФІЛЬ</div>
+        <div class="nav-btn" onclick="go('tab2', this)">ЧАТ</div>
+        <div class="nav-btn" onclick="go('tab3', this)">КРАМНИЦЯ</div>
+    </div>
+
+    <script>
+        // Ініціалізація
+        const cfg = {
+            apiKey: "AIzaSyADqPVJXhMwre4O3GV6VL84b8y1VA7XApg",
+            authDomain: "gm-football.firebaseapp.com",
+            projectId: "gm-football",
+            storageBucket: "gm-football.firebasestorage.app",
+            messagingSenderId: "37289387027",
+            appId: "1:37289387027:web:27083c91ee7f62ee81cbe6"
+        };
+        
+        try {
+            firebase.initializeApp(cfg);
+            var db = firebase.firestore();
+            var st = firebase.storage();
+        } catch(e) { console.error("Firebase error"); }
+
+        function adminLogin() {
+            if(prompt("Pass:") === "0608") {
+                var s = document.createElement('style');
+                s.innerHTML = '.admin-only { display: block !important; }';
+                document.head.appendChild(s);
+                alert("ADMIN OK");
+            }
+        }
+
+        function go(id, el) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            el.classList.add('active');
+        }
+
+        // ЧАТ
+        async function send() {
+            var t = document.getElementById('mText').value;
+            var f = document.getElementById('mFile').files[0];
+            var url = "";
+            if(f) {
+                var r = st.ref('c/'+Date.now());
+                await r.put(f);
+                url = await r.getDownloadURL();
+            }
+            if(t || url) {
+                await db.collection("chat").add({t, url, d: Date.now()});
+                document.getElementById('mText').value = "";
+            }
+        }
+
+        db.collection("chat").orderBy("d","asc").onSnapshot(s => {
+            var b = document.getElementById('msg-box'); b.innerHTML = "";
+            s.forEach(doc => {
+                var d = doc.data();
+                b.innerHTML += `<div class="card">
+                    <button class="admin-only" onclick="del('chat','${doc.id}')" style="color:red;float:right;background:none;border:1px solid red;border-radius:4px;">×</button>
+                    ${d.t || ""} <br> ${d.url ? `<img src="${d.url}">` : ""}
+                </div>`;
+            });
+            b.scrollTop = b.scrollHeight;
+        });
+
+        // КРАМНИЦЯ
+        async function addM() {
+            var n = document.getElementById('iName').value;
+            var f = document.getElementById('iFile').files[0];
+            if(n && f) {
+                var r = st.ref('m/'+Date.now());
+                await r.put(f);
+                var url = await r.getDownloadURL();
+                await db.collection("market").add({n, url, d: Date.now()});
+            }
+        }
+
+        db.collection("market").orderBy("d","desc").onSnapshot(s => {
+            var l = document.getElementById('m-list'); l.innerHTML = "";
+            s.forEach(doc => {
+                var d = doc.data();
+                l.innerHTML += `<div class="card">
+                    <button class="admin-only" onclick="del('market','${doc.id}')" style="color:red;float:right;background:none;border:1px solid red;border-radius:4px;">×</button>
+                    <img src="${d.url}" style="width:60px;height:60px;object-fit:cover;"> ${d.n}
+                </div>`;
+            });
+        });
+
+        async function del(c, i) { if(confirm("Del?")) await db.collection(c).doc(i).delete(); }
+    </script>
+</body>
+</html>
