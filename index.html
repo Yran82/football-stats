@@ -1,4 +1,82 @@
-const firebaseConfig = {
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>G&M Football Pro</title>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <style>
+        :root { --green: #39FF14; --blue: #4285F4; --dark: #0a0a0a; }
+        body { font-family: sans-serif; background: var(--dark); color: white; margin: 0; padding-bottom: 80px; }
+        
+        .nav { position: fixed; bottom: 0; width: 100%; background: #111; display: flex; height: 65px; border-top: 1px solid #333; z-index: 1000; }
+        .nav-btn { flex: 1; display: flex; align-items: center; justify-content: center; font-size: 11px; color: #888; text-align: center; }
+        .nav-btn.active { color: var(--green); font-weight: bold; }
+        
+        .tab { display: none; padding: 15px; }
+        .tab.active { display: block; }
+        
+        .card { background: #161616; border-radius: 15px; padding: 15px; margin-bottom: 15px; border-left: 5px solid var(--green); position: relative; }
+        .admin-only { display: none !important; }
+        .del-btn { position: absolute; top: 10px; right: 10px; color: red; border: 1px solid red; background: none; border-radius: 5px; cursor: pointer; }
+        
+        canvas { max-width: 260px; margin: 10px auto; display: block; }
+        input, button { width: 100%; padding: 12px; margin: 5px 0; border-radius: 10px; border: none; font-size: 16px; box-sizing: border-box; }
+        input { background: #222; color: #fff; border: 1px solid #333; }
+        .btn-green { background: var(--green); color: black; font-weight: bold; }
+        
+        #msg-box { height: 350px; overflow-y: auto; background: #050505; border-radius: 10px; padding: 10px; margin-bottom: 10px; }
+        img { max-width: 100%; border-radius: 10px; margin-top: 5px; }
+    </style>
+</head>
+<body>
+
+    <div style="text-align: right; padding: 10px; background: #111;">
+        <button onclick="adminLogin()" style="width:auto; padding:5px 10px; font-size:10px; background:#222; color:#555;">🔐 Admin Access</button>
+    </div>
+
+    <div id="t1" class="tab active">
+        <div class="card">
+            <h2 style="margin:0;">ГЛІБ (11 років)</h2>
+            <canvas id="cGlib"></canvas>
+            <p style="text-align:center; font-size:12px; color:#888;">Ріст: 135 см | Вага: 33 кг</p>
+        </div>
+        <div class="card" style="border-left-color: var(--blue);">
+            <h2 style="margin:0;">МАРК (2 роки)</h2>
+            <canvas id="cMark"></canvas>
+            <p style="text-align:center; font-size:12px; color:#888;">Ріст: 92 см | Вага: 14.5 кг</p>
+        </div>
+    </div>
+
+    <div id="t2" class="tab">
+        <div id="msg-box">Завантаження чату...</div>
+        <input type="text" id="mTxt" placeholder="Ваше повідомлення...">
+        <input type="file" id="mFile" accept="image/*">
+        <button class="btn-green" onclick="send()">ВІДПРАВИТИ</button>
+    </div>
+
+    <div id="t3" class="tab">
+        <div class="card" style="border-style: dashed; border-width: 1px;">
+            <input type="text" id="iN" placeholder="Назва товару">
+            <input type="file" id="iF" accept="image/*">
+            <button class="btn-green" onclick="addM()">ВИСТАВИТИ</button>
+        </div>
+        <div id="m-list"></div>
+    </div>
+
+    <div class="nav">
+        <div class="nav-btn active" onclick="go('t1', this)">👤<br>Профіль</div>
+        <div class="nav-btn" onclick="go('t2', this)">💬<br>Чат</div>
+        <div class="nav-btn" onclick="go('t3', this)">🏪<br>Крамниця</div>
+    </div>
+
+    <script>
+        // Конфігурація
+        const fbCfg = {
             apiKey: "AIzaSyADqPVJXhMwre4O3GV6VL84b8y1VA7XApg",
             authDomain: "gm-football.firebaseapp.com",
             projectId: "gm-football",
@@ -6,120 +84,94 @@ const firebaseConfig = {
             messagingSenderId: "37289387027",
             appId: "1:37289387027:web:27083c91ee7f62ee81cbe6"
         };
-        firebase.initializeApp(firebaseConfig);
+        
+        firebase.initializeApp(fbCfg);
         const db = firebase.firestore();
-        const storage = firebase.storage();
+        const st = firebase.storage();
 
-        let isAdmin = false;
-
-        // ВИПРАВЛЕНА ФУНКЦІЯ ВХОДУ
         function adminLogin() {
-            const p = prompt("Password:");
-            if(p === "0608") {
-                isAdmin = true; 
+            if(prompt("Введіть пароль:") === "0608") {
+                const s = document.createElement('style');
+                s.innerHTML = '.admin-only { display: block !important; }';
+                document.head.appendChild(s);
                 alert("Admin Mode Active!");
-                // Знаходимо всі приховані кнопки і показуємо їх прямо зараз
-                const adminButtons = document.querySelectorAll('.admin-only');
-                adminButtons.forEach(btn => {
-                    btn.style.setProperty('display', 'block', 'important');
-                });
-            } else {
-                alert("Wrong password!");
             }
         }
 
-        // РАДАР-ГРАФІКИ
-        function createRadar(id, color, data) {
-            new Chart(document.getElementById(id), {
-                type: 'radar',
-                data: {
-                    labels: ['PAC', 'SHO', 'PAS', 'DRI', 'DEF', 'PHY'],
-                    datasets: [{
-                        data: data,
-                        backgroundColor: color + '33',
-                        borderColor: color,
-                        borderWidth: 2,
-                        pointRadius: 0
-                    }]
-                },
-                options: { 
-                    scales: { r: { min: 0, max: 100, ticks: { display: false }, grid: { color: '#333' }, angleLines: { color: '#333' } } },
-                    plugins: { legend: { display: false } }
-                }
-            });
-        }
-        createRadar('chartGlib', '#39FF14', [85, 80, 75, 90, 60, 70]);
-        createRadar('chartMark', '#4285F4', [40, 30, 50, 60, 20, 40]);
-
-        function switchTab(id, el) {
-            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-            document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+        function go(id, el) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
             document.getElementById(id).classList.add('active');
             el.classList.add('active');
         }
 
-        async function uploadAndSend() {
-            const txt = document.getElementById('chatInput').value;
-            const file = document.getElementById('chatFile').files[0];
-            const btn = document.getElementById('sendBtn');
-            if(!txt && !file) return;
-            btn.disabled = true;
+        // Графіки
+        function mkChart(id, color, data) {
+            new Chart(document.getElementById(id), {
+                type: 'radar',
+                data: {
+                    labels: ['PAC', 'SHO', 'PAS', 'DRI', 'DEF', 'PHY'],
+                    datasets: [{ data: data, backgroundColor: color+'33', borderColor: color, borderWidth: 2, pointRadius: 0 }]
+                },
+                options: { scales: { r: { min: 0, max: 100, ticks: { display: false }, grid: { color: '#333' } } }, plugins: { legend: { display: false } } }
+            });
+        }
+
+        window.onload = () => {
+            mkChart('cGlib', '#39FF14', [85, 80, 75, 90, 60, 70]);
+            mkChart('cMark', '#4285F4', [40, 30, 50, 60, 20, 40]);
+        };
+
+        // Функції роботи з даними
+        async function send() {
+            const t = document.getElementById('mTxt').value;
+            const f = document.getElementById('mFile').files[0];
             let url = "";
-            if(file) {
-                const ref = storage.ref(`chat/${Date.now()}`);
-                await ref.put(file);
-                url = await ref.getDownloadURL();
+            if(f) {
+                const r = st.ref('c/'+Date.now());
+                await r.put(f);
+                url = await r.getDownloadURL();
             }
-            await db.collection("chat").add({ text: txt, img: url, time: firebase.firestore.FieldValue.serverTimestamp() });
-            document.getElementById('chatInput').value = ""; document.getElementById('chatFile').value = "";
-            btn.disabled = false;
+            if(t || url) await db.collection("chat").add({t, url, d: Date.now()});
+            document.getElementById('mTxt').value = "";
         }
 
-        // ОНОВЛЕНИЙ ЧАТ (з перевіркою isAdmin)
-        db.collection("chat").orderBy("time", "asc").onSnapshot(snap => {
-            const box = document.getElementById('msg-box');
-            box.innerHTML = "";
-            snap.forEach(doc => {
-                const m = doc.data();
-                const time = m.time ? new Date(m.time.seconds * 1000).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : "";
-                const displayStyle = isAdmin ? 'block' : 'none';
-                box.innerHTML += `<div class="msg-item">
-                    <button class="btn-del admin-only" style="display:${displayStyle}; float:right" onclick="deleteItem('chat','${doc.id}')">×</button>
-                    <div style="font-size:0.9em;">${m.text}</div>
-                    ${m.img ? `<img src="${m.img}" class="msg-img">` : ""}
-                    <div class="msg-time">${time}</div>
+        db.collection("chat").orderBy("d","asc").onSnapshot(s => {
+            const b = document.getElementById('msg-box'); b.innerHTML = "";
+            s.forEach(doc => {
+                const d = doc.data();
+                b.innerHTML += `<div class="card">
+                    <button class="admin-only del-btn" onclick="del('chat','${doc.id}')">×</button>
+                    ${d.t || ""} <br> ${d.url ? `<img src="${d.url}">` : ""}
                 </div>`;
             });
-            box.scrollTop = box.scrollHeight;
+            b.scrollTop = b.scrollHeight;
         });
 
-        async function uploadMarketItem() {
-            const n = document.getElementById('itemName').value;
-            const f = document.getElementById('itemFile').files[0];
-            if(!n || !f) return alert("Заповніть назву та фото!");
-            const ref = storage.ref(`market/${Date.now()}`);
-            await ref.put(f);
-            const url = await ref.getDownloadURL();
-            await db.collection("market").add({ name: n, img: url, time: firebase.firestore.FieldValue.serverTimestamp() });
-            alert("Товар додано!");
+        async function addM() {
+            const n = document.getElementById('iN').value;
+            const f = document.getElementById('iF').files[0];
+            if(n && f) {
+                const r = st.ref('m/'+Date.now());
+                await r.put(f);
+                const url = await r.getDownloadURL();
+                await db.collection("market").add({n, url, d: Date.now()});
+            }
         }
 
-        // ОНОВЛЕНА КРАМНИЦЯ
-        db.collection("market").orderBy("time", "desc").onSnapshot(snap => {
-            const l = document.getElementById('market-list'); l.innerHTML = "";
-            snap.forEach(doc => {
-                const i = doc.data();
-                const displayStyle = isAdmin ? 'block' : 'none';
-                l.innerHTML += `<div style="background:#1a1a1a; border-radius:10px; overflow:hidden; position:relative;">
-                    <img src="${i.img}" style="width:100%; height:100px; object-fit:cover;">
-                    <div style="padding:5px; font-size:0.7em;">${i.name}</div>
-                    <button class="btn-del admin-only" style="display:${displayStyle}; margin:5px;" onclick="deleteItem('market','${doc.id}')">Видалити</button>
+        db.collection("market").orderBy("d","desc").onSnapshot(s => {
+            const l = document.getElementById('m-list'); l.innerHTML = "";
+            s.forEach(doc => {
+                const d = doc.data();
+                l.innerHTML += `<div class="card">
+                    <button class="admin-only del-btn" onclick="del('market','${doc.id}')">×</button>
+                    <img src="${d.url}" style="width:70px;height:70px;object-fit:cover;border-radius:8px;">
+                    <div style="display:inline-block; vertical-align:top; margin-left:10px;">${d.n}</div>
                 </div>`;
             });
         });
 
-        async function deleteItem(c, i) { 
-            if(confirm("Видалити цей запис назавжди?")) {
-                await db.collection(c).doc(i).delete(); 
-            }
-        }
+        async function del(c, i) { if(confirm("Видалити?")) await db.collection(c).doc(i).delete(); }
+    </script>
+</body>
+</html>
