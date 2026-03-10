@@ -3,80 +3,104 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>G&M Football Pro</title>
+    <title>G&M Football Pro Elite</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <style>
-        :root { --green: #39FF14; --blue: #4285F4; --dark: #0a0a0a; }
-        body { font-family: sans-serif; background: var(--dark); color: white; margin: 0; padding-bottom: 80px; }
+        :root { --green: #39FF14; --blue: #4285F4; --dark: #0a0a0a; --danger: #ff4444; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--dark); color: white; margin: 0; padding-bottom: 90px; overflow-x: hidden; }
         
-        .nav { position: fixed; bottom: 0; width: 100%; background: #111; display: flex; height: 65px; border-top: 1px solid #333; z-index: 1000; }
-        .nav-btn { flex: 1; display: flex; align-items: center; justify-content: center; font-size: 11px; color: #888; text-align: center; }
-        .nav-btn.active { color: var(--green); font-weight: bold; }
-        
-        .tab { display: none; padding: 15px; }
-        .tab.active { display: block; }
-        
-        .card { background: #161616; border-radius: 15px; padding: 15px; margin-bottom: 15px; border-left: 5px solid var(--green); position: relative; }
+        /* Навігація */
+        .bottom-nav { position: fixed; bottom: 0; width: 100%; background: #111; display: flex; height: 70px; border-top: 1px solid #333; z-index: 1000; box-shadow: 0 -5px 15px rgba(0,0,0,0.8); }
+        .nav-item { color: #888; font-size: 0.65em; text-align: center; cursor: pointer; flex: 1; display: flex; flex-direction: column; justify-content: center; }
+        .nav-item.active { color: var(--green); font-weight: bold; }
+
+        .tab-content { display: none; padding: 15px; animation: fadeIn 0.3s; }
+        .tab-content.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        /* Картки */
+        .card { background: #161616; border-radius: 18px; padding: 15px; margin-bottom: 15px; border-left: 5px solid var(--green); position: relative; }
         .admin-only { display: none !important; }
-        .del-btn { position: absolute; top: 10px; right: 10px; color: red; border: 1px solid red; background: none; border-radius: 5px; cursor: pointer; }
-        
-        canvas { max-width: 260px; margin: 10px auto; display: block; }
-        input, button { width: 100%; padding: 12px; margin: 5px 0; border-radius: 10px; border: none; font-size: 16px; box-sizing: border-box; }
-        input { background: #222; color: #fff; border: 1px solid #333; }
-        .btn-green { background: var(--green); color: black; font-weight: bold; }
-        
-        #msg-box { height: 350px; overflow-y: auto; background: #050505; border-radius: 10px; padding: 10px; margin-bottom: 10px; }
-        img { max-width: 100%; border-radius: 10px; margin-top: 5px; }
+        .btn-del { position: absolute; top: 10px; right: 10px; background: none; border: 1px solid var(--danger); color: var(--danger); padding: 4px 10px; border-radius: 6px; font-size: 0.6em; cursor: pointer; }
+
+        canvas { max-width: 250px; margin: 0 auto; display: block; }
+        input, button { width: 100%; padding: 12px; margin: 5px 0; border-radius: 10px; border: none; box-sizing: border-box; font-size: 16px; }
+        input { background: #222; color: white; border: 1px solid #333; }
+        .btn-main { background: var(--green); color: black; font-weight: bold; cursor: pointer; }
+
+        /* Чат */
+        #msg-box { height: 350px; overflow-y: auto; background: #050505; border-radius: 12px; padding: 10px; margin-bottom: 10px; border: 1px solid #222; }
+        .msg-item { background: #1a1a1a; padding: 10px; border-radius: 12px; margin-bottom: 10px; position: relative; border-bottom: 1px solid #333; }
+        .msg-img { max-width: 100%; border-radius: 10px; margin-top: 8px; display: block; }
     </style>
 </head>
 <body>
 
-    <div style="text-align: right; padding: 10px; background: #111;">
-        <button onclick="adminLogin()" style="width:auto; padding:5px 10px; font-size:10px; background:#222; color:#555;">🔐 Admin Access</button>
+    <div style="padding: 10px; text-align: right; background: #111;">
+        <button onclick="adminLogin()" style="width: auto; padding: 5px 12px; font-size: 10px; background: #222; color: #555; border-radius: 20px;">🔐 Admin Access</button>
     </div>
 
-    <div id="t1" class="tab active">
+    <div id="tab-profile" class="tab-content active">
+        <h1 style="color:var(--green); text-align: center;">G&M PRO CAREER</h1>
         <div class="card">
-            <h2 style="margin:0;">ГЛІБ (11 років)</h2>
-            <canvas id="cGlib"></canvas>
-            <p style="text-align:center; font-size:12px; color:#888;">Ріст: 135 см | Вага: 33 кг</p>
+            <h2>ГЛІБ (11 років)</h2>
+            <canvas id="chartGlib"></canvas>
+            <p style="text-align:center; font-size: 12px; color: #aaa;">Ріст: 135 см | Вага: 33 кг</p>
         </div>
         <div class="card" style="border-left-color: var(--blue);">
-            <h2 style="margin:0;">МАРК (2 роки)</h2>
-            <canvas id="cMark"></canvas>
-            <p style="text-align:center; font-size:12px; color:#888;">Ріст: 92 см | Вага: 14.5 кг</p>
+            <h2>МАРК (2 роки)</h2>
+            <canvas id="chartMark"></canvas>
+            <p style="text-align:center; font-size: 12px; color: #aaa;">Ріст: 92 см | Вага: 14.5 кг</p>
         </div>
     </div>
 
-    <div id="t2" class="tab">
-        <div id="msg-box">Завантаження чату...</div>
-        <input type="text" id="mTxt" placeholder="Ваше повідомлення...">
-        <input type="file" id="mFile" accept="image/*">
-        <button class="btn-green" onclick="send()">ВІДПРАВИТИ</button>
+    <div id="tab-rating" class="tab-content">
+        <h1 style="color:var(--green)">LEADERBOARD</h1>
+        <div id="leaderboard"></div>
     </div>
 
-    <div id="t3" class="tab">
-        <div class="card" style="border-style: dashed; border-width: 1px;">
-            <input type="text" id="iN" placeholder="Назва товару">
-            <input type="file" id="iF" accept="image/*">
-            <button class="btn-green" onclick="addM()">ВИСТАВИТИ</button>
+    <div id="tab-market" class="tab-content">
+        <h1 style="color:var(--green)">MARKETPLACE</h1>
+        <div class="card" style="border-style: dashed;">
+            <input type="text" id="marketName" placeholder="Назва товару">
+            <input type="file" id="marketFile" accept="image/*">
+            <button class="btn-main" onclick="uploadToMarket()">ВИСТАВИТИ ТОВАР</button>
         </div>
-        <div id="m-list"></div>
+        <div id="market-list" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;"></div>
     </div>
 
-    <div class="nav">
-        <div class="nav-btn active" onclick="go('t1', this)">👤<br>Профіль</div>
-        <div class="nav-btn" onclick="go('t2', this)">💬<br>Чат</div>
-        <div class="nav-btn" onclick="go('t3', this)">🏪<br>Крамниця</div>
+    <div id="tab-events" class="tab-content">
+        <h1 style="color:var(--green)">MATCH DAY</h1>
+        <div class="card">
+            <strong style="color:var(--green)">15 БЕРЕЗНЯ</strong><br>
+            🏆 Фінал турніру (Гліб)<br>
+            📍 База ліцею, 10:00
+        </div>
+    </div>
+
+    <div id="tab-chat" class="tab-content">
+        <h1 style="color:var(--green)">TEAM CHAT</h1>
+        <div id="msg-box">Завантаження повідомлень...</div>
+        <input type="text" id="chatInput" placeholder="Повідомлення...">
+        <input type="file" id="chatFile" accept="image/*">
+        <button class="btn-main" id="sendBtn" onclick="sendChatMessage()">ВІДПРАВИТИ</button>
+    </div>
+
+    <div class="bottom-nav">
+        <div class="nav-item active" onclick="switchTab('tab-profile', this)">👤<br>Профіль</div>
+        <div class="nav-item" onclick="switchTab('tab-rating', this)">🏆<br>Рейтинг</div>
+        <div class="nav-item" onclick="switchTab('tab-market', this)">🏪<br>Крамниця</div>
+        <div class="nav-item" onclick="switchTab('tab-events', this)">📅<br>Події</div>
+        <div class="nav-item" onclick="switchTab('tab-chat', this)">💬<br>Чат</div>
     </div>
 
     <script>
-        // Конфігурація
-        const fbCfg = {
+        // Ініціалізація Firebase
+        const firebaseConfig = {
             apiKey: "AIzaSyADqPVJXhMwre4O3GV6VL84b8y1VA7XApg",
             authDomain: "gm-football.firebaseapp.com",
             projectId: "gm-football",
@@ -84,29 +108,30 @@
             messagingSenderId: "37289387027",
             appId: "1:37289387027:web:27083c91ee7f62ee81cbe6"
         };
-        
-        firebase.initializeApp(fbCfg);
+        firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
-        const st = firebase.storage();
+        const storage = firebase.storage();
 
+        // Адмін-система
         function adminLogin() {
             if(prompt("Введіть пароль:") === "0608") {
-                const s = document.createElement('style');
-                s.innerHTML = '.admin-only { display: block !important; }';
-                document.head.appendChild(s);
                 alert("Admin Mode Active!");
+                const style = document.createElement('style');
+                style.innerHTML = '.admin-only { display: block !important; }';
+                document.head.appendChild(style);
             }
         }
 
-        function go(id, el) {
-            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+        // Перемикання вкладок
+        function switchTab(id, el) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
             document.getElementById(id).classList.add('active');
             el.classList.add('active');
         }
 
         // Графіки
-        function mkChart(id, color, data) {
+        function drawRadar(id, color, data) {
             new Chart(document.getElementById(id), {
                 type: 'radar',
                 data: {
@@ -116,62 +141,6 @@
                 options: { scales: { r: { min: 0, max: 100, ticks: { display: false }, grid: { color: '#333' } } }, plugins: { legend: { display: false } } }
             });
         }
-
         window.onload = () => {
-            mkChart('cGlib', '#39FF14', [85, 80, 75, 90, 60, 70]);
-            mkChart('cMark', '#4285F4', [40, 30, 50, 60, 20, 40]);
-        };
-
-        // Функції роботи з даними
-        async function send() {
-            const t = document.getElementById('mTxt').value;
-            const f = document.getElementById('mFile').files[0];
-            let url = "";
-            if(f) {
-                const r = st.ref('c/'+Date.now());
-                await r.put(f);
-                url = await r.getDownloadURL();
-            }
-            if(t || url) await db.collection("chat").add({t, url, d: Date.now()});
-            document.getElementById('mTxt').value = "";
-        }
-
-        db.collection("chat").orderBy("d","asc").onSnapshot(s => {
-            const b = document.getElementById('msg-box'); b.innerHTML = "";
-            s.forEach(doc => {
-                const d = doc.data();
-                b.innerHTML += `<div class="card">
-                    <button class="admin-only del-btn" onclick="del('chat','${doc.id}')">×</button>
-                    ${d.t || ""} <br> ${d.url ? `<img src="${d.url}">` : ""}
-                </div>`;
-            });
-            b.scrollTop = b.scrollHeight;
-        });
-
-        async function addM() {
-            const n = document.getElementById('iN').value;
-            const f = document.getElementById('iF').files[0];
-            if(n && f) {
-                const r = st.ref('m/'+Date.now());
-                await r.put(f);
-                const url = await r.getDownloadURL();
-                await db.collection("market").add({n, url, d: Date.now()});
-            }
-        }
-
-        db.collection("market").orderBy("d","desc").onSnapshot(s => {
-            const l = document.getElementById('m-list'); l.innerHTML = "";
-            s.forEach(doc => {
-                const d = doc.data();
-                l.innerHTML += `<div class="card">
-                    <button class="admin-only del-btn" onclick="del('market','${doc.id}')">×</button>
-                    <img src="${d.url}" style="width:70px;height:70px;object-fit:cover;border-radius:8px;">
-                    <div style="display:inline-block; vertical-align:top; margin-left:10px;">${d.n}</div>
-                </div>`;
-            });
-        });
-
-        async function del(c, i) { if(confirm("Видалити?")) await db.collection(c).doc(i).delete(); }
-    </script>
-</body>
-</html>
+            drawRadar('chartGlib', '#39FF14', [85, 80, 75, 90, 60, 70]);
+            drawRadar('chartMark',
